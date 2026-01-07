@@ -1,0 +1,91 @@
+<%- include('partials/header', { title }) %>
+<%- include('partials/sidebar', { active: 'balance' }) %>
+
+<div class="content">
+
+  <%- include('partials/topbar', { title, user }) %>
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h4 class="mb-1"><%= shop.name %></h4>
+      <div class="" style="font-size:13px">
+        +91 <%= shop.phone %> • <%= shop.location %>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <a href="/sales/shopbalance" class="btn btn-outline-light btn-sm">
+        ← Back to Users
+      </a>
+             <form action="/sales/shop/<%= shop._id %>/toggle-block" method="POST">
+  <% if (shop.blocked) { %>
+    <button class="btn btn-outline-light btn-sm">Unblock</button>
+  <% } else { %>
+    <button class="btn btn-danger btn-sm">Block</button>
+  <% } %>
+</form>
+
+    </div>
+  </div>
+
+  <!-- TABS -->
+<ul class="nav nav-tabs tb-tabs mb-4">
+  <li class="nav-item">
+    <a href="?tab=summary"
+       class="tb-tab <%= activeTab === 'summary' ? 'active' : '' %>">
+      Summary
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="?tab=orders"
+       class="tb-tab <%= activeTab === 'orders' ? 'active' : '' %>">
+      Orders
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="?tab=payments"
+       class="tb-tab <%= activeTab === 'payments' ? 'active' : '' %>">
+      Payments
+    </a>
+  </li>
+</ul>
+
+
+
+  <!-- TAB CONTENT -->
+ <div class="<%= activeTab === 'summary' ? '' : 'd-none' %>">
+  <%- include('./partials/shopSummary', { summary }) %>
+</div>
+
+<div class="<%= activeTab === 'orders' ? '' : 'd-none' %>">
+  <%- include('./partials/shopOrders', { orders }) %>
+</div>
+
+<div class="<%= activeTab === 'payments' ? '' : 'd-none' %>">
+<%- include('./partials/shopPayment', { transactions }) %>
+
+
+</div>
+
+
+</div>
+
+<script>
+  function showTab(tab) {
+    document.querySelectorAll('.tab-content-box').forEach(el => {
+      el.classList.add('d-none');
+    });
+
+    document.querySelectorAll('.nav-link').forEach(el => {
+      el.classList.remove('active');
+    });
+
+    document.getElementById(tab).classList.remove('d-none');
+    event.target.classList.add('active');
+  }
+
+  
+</script>
+
+<%- include('partials/footer') %>

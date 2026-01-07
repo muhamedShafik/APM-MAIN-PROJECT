@@ -1,0 +1,289 @@
+<%- include('partials/header', { title }) %>
+  <%- include('partials/sidebar') %>
+    <%- include('partials/topbar', { user }) %>
+
+      <div class="content">
+
+        <!-- ================= CREATE ORDER ================= -->
+        <div class="card-box mb-4">
+          <div class="mb-3">
+            <div class="tb-section-title">New Order</div>
+            <div class="tb-section-sub">
+              Create a new delivery order for a selected date
+            </div>
+          </div>
+
+          <form action="/shop/orders/create" method="POST" class="row g-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label">Date</label>
+              <input type="date" name="deliveryDate" class="form-control tb-input-dark" required />
+              <small class="text-muted">
+                Final price per box will be set on delivery morning.
+              </small>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Number of boxes</label>
+              <input type="number" name="boxes" min="1" class="form-control tb-input-dark no-spinner" required />
+            </div>
+
+            <div class="col-12 col-md-4 d-flex align-items-end">
+              <button type="submit" class="btn btn-primary px-4 my-4">
+                Save Order
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ================= FILTER ================= -->
+        <div class="card-box mb-4">
+          <div class="mb-3">
+            <div class="tb-section-title">Filter Orders</div>
+            <div class="tb-section-sub">
+              View orders between selected dates
+            </div>
+          </div>
+
+          <form method="GET" class="row g-3 align-items-end">
+            <div class="col-12 col-md-4">
+              <label class="form-label">From</label>
+              <input type="date" name="from" value="<%= from %>" class="form-control tb-input-dark" />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">To</label>
+              <input type="date" name="to" value="<%= to %>" class="form-control tb-input-dark" />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <button class="btn btn-primary px-4">
+                Apply Filters
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ================= ORDER LIST ================= -->
+        <div class="card-box">
+          <div class="mb-3">
+            <div class="tb-section-title">Order History</div>
+            <div class="tb-section-sub">
+              Recent and upcoming orders
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-dark table-borderless align-middle mb-0">
+              <thead class="d-none d-md-table-header-group">
+                <tr>
+                  <th>Date</th>
+                  <th class="text-center">Boxes</th>
+                  <th class="text-center">Price / Box</th>
+                  <th class="text-center">Discount / Box</th>
+                  <th class="text-end">Total (₹)</th>
+
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <% if (orders.length===0) { %>
+                  <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                      No orders found
+                    </td>
+                  </tr>
+                  <% } %>
+
+                    <% orders.forEach(o=> { %>
+                      <tr class="d-block d-md-table-row mb-3 mb-md-0 tb-row-card">
+                        <td class="d-flex d-md-table-cell justify-content-between">
+                          <span class="d-md-none text-muted">Date</span>
+                          <span>
+                            <%= o.deliveryDate %>
+                          </span>
+                        </td>
+
+                        <td class="d-flex d-md-table-cell justify-content-between text-md-center">
+                          <span class="d-md-none text-muted">Boxes</span>
+                          <span>
+                            <%= o.boxes %>
+                          </span>
+                        </td>
+                        <td class="d-flex d-md-table-cell justify-content-between text-md-center">
+                          <span class="d-md-none text-muted">Price / Box</span>
+                          <span>₹<%= o.pricePerBox %></span>
+                        </td>
+
+                        <td class="d-flex d-md-table-cell justify-content-between text-md-center text-warning">
+                          <span class="d-md-none text-muted">Discount</span>
+                          <span>−₹<%= o.discountPerBox %></span>
+                        </td>
+
+                        <td class="d-flex d-md-table-cell justify-content-between text-md-end fw-bold">
+                          <span class="d-md-none text-muted">Total</span>
+                          <span>₹<%= o.total %></span>
+                        </td>
+
+                        <td
+                          class="d-flex d-md-table-cell justify-content-between justify-content-md-center text-center">
+                          <span class="d-md-none text-muted">Actions</span>
+
+                          <% if (o.editable) { %>
+                            <div class="d-flex gap-2">
+                              <button type="button" class="icon-btn"
+                                onclick="openEdit('<%= o._id %>', '<%= o.deliveryDate %>', '<%= o.boxes %>')">
+                                ✏️
+                              </button>
+
+                              <button type="button" class="icon-btn text-danger" onclick="deleteOrder('<%= o._id %>')">
+                                ❌
+                              </button>
+                            </div>
+                            <% } else { %>
+                              🔒 Locked
+                              <% } %>
+                        </td>
+                      </tr>
+                      <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ================= PAGINATION ================= -->
+          <div class="tb-pagination mt-3">
+            <% if (page> 1) { %>
+              <a class="tb-page-btn" href="?page=<%= page - 1 %>&from=<%= from %>&to=<%= to %>">
+                Previous
+              </a>
+              <% } else { %>
+                <span></span>
+                <% } %>
+
+                  <span>Page <%= page %> of <%= totalPages %></span>
+
+                  <% if (page < totalPages) { %>
+                    <a class="tb-page-btn" href="?page=<%= page + 1 %>&from=<%= from %>&to=<%= to %>">
+                      Next
+                    </a>
+                    <% } %>
+          </div>
+        </div>
+      </div>
+      <div id="flash-data" data-error="<%= typeof error !== 'undefined' ? error : '' %>"
+        data-success="<%= typeof success !== 'undefined' ? success : '' %>">
+      </div>
+
+
+
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+      <script>
+        /* ================= GLOBAL DARK SWEETALERT ================= */
+
+        const DarkSwal = Swal.mixin({
+          background: "#020617",
+          color: "#e5e7eb",
+          width: "360px",
+          padding: "1.2rem",
+          buttonsStyling: false,
+          customClass: {
+            popup: "tb-swal-popup",
+            title: "tb-swal-title",
+            htmlContainer: "tb-swal-text",
+            confirmButton: "tb-swal-confirm",
+            cancelButton: "tb-swal-cancel"
+          }
+        });
+
+        /* ================= FLASH ALERTS ================= */
+
+        const flash = document.getElementById("flash-data");
+        const error = flash?.dataset?.error;
+        const success = flash?.dataset?.success;
+
+        if (error) {
+          DarkSwal.fire({
+            icon: "error",
+            title: "Error",
+            text: error
+          });
+        }
+
+        if (success) {
+          DarkSwal.fire({
+            icon: "success",
+            title: "Success",
+            text: success
+          });
+        }
+
+        /* ================= REMOVE QUERY AFTER ALERT ================= */
+
+        if (window.location.search.includes("success") || window.location.search.includes("error")) {
+          const url = new URL(window.location);
+          url.searchParams.delete("success");
+          url.searchParams.delete("error");
+          window.history.replaceState({}, document.title, url.pathname + url.search);
+        }
+
+        /* ================= DELETE ORDER ================= */
+
+        function deleteOrder(id) {
+          DarkSwal.fire({
+            title: "Delete Order?",
+            text: "This action cannot be undone",
+            icon: "warning",
+            showCancelButton: true
+          }).then(result => {
+            if (result.isConfirmed) {
+              const form = document.createElement("form");
+              form.method = "POST";
+              form.action = `/shop/orders/${id}/delete`;
+              document.body.appendChild(form);
+              form.submit();
+            }
+          });
+        }
+
+        /* ================= EDIT ORDER ================= */
+
+        function openEdit(id, date, boxes) {
+          DarkSwal.fire({
+            title: "Edit Order",
+            html: `
+        <label style="font-size:13px">Date</label>
+        <input class="swal2-input" value="${date}" disabled>
+
+        <label style="font-size:13px;margin-top:6px">Boxes</label>
+        <input id="editBoxes" type="number" class="swal2-input" min="1" value="${boxes}">
+      `,
+            showCancelButton: true,
+            confirmButtonText: "Save",
+            preConfirm: () => {
+              const b = document.getElementById("editBoxes").value;
+              if (!b || b <= 0) {
+                DarkSwal.showValidationMessage("Boxes must be greater than 0");
+              }
+              return b;
+            }
+          }).then(result => {
+            if (result.isConfirmed) {
+              const form = document.createElement("form");
+              form.method = "POST";
+              form.action = `/shop/orders/${id}/update`;
+
+              const input = document.createElement("input");
+              input.type = "hidden";
+              input.name = "boxes";
+              input.value = result.value;
+
+              form.appendChild(input);
+              document.body.appendChild(form);
+              form.submit();
+            }
+          });
+        }
+      </script>
+
+      <%- include('partials/footer') %>

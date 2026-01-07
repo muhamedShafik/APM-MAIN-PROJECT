@@ -1,0 +1,211 @@
+<%- include('partials/header', { title }) %>
+<%- include('partials/sidebar', { active: 'today' }) %>
+
+<div class="content">
+  <%- include('partials/topbar', { title, user }) %>
+
+  <!-- Search -->
+  <div class="tb-search-box">
+    <input
+      type="text"
+      id="tableSearch"
+      class="tb-search-input"
+      placeholder="Search shop / phone / location"
+      value="<%= search || '' %>"
+    />
+  </div>
+
+  <!-- Table -->
+  <div class="card-box">
+    <table class="table table-dark table-border">
+      <thead>
+        <tr>
+          <th>User Name</th>
+          <th>Phone</th>
+          <th>Location</th>
+          <th>Amount</th>
+          <th>Payment</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% orders.forEach(o => { %>
+          <tr class="user-row">
+            <td><%= o.shop.name %></td>
+            <td><%= o.shop.phone %></td>
+            <td><%= o.shop.location %></td>
+            <td>₹ <%= o.totalAmount %></td>
+            <td>
+              <button
+  type="button"
+  class="btn btn-danger btn-sm"
+  onclick="openPaymentModal(
+    '<%= o._id %>',
+    '<%= o.shop._id %>',
+    '<%= o.shop.name %>',
+    '<%= o.totalAmount || 0 %>',
+    '<%= o.paidToday || 0 %>',
+    '<%= o.remainingToday || 0 %>'
+  )"
+>
+  Collect
+</button>
+
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- ================= COLLECT PAYMENT MODAL ================= -->
+<div id="paymentModal" class="tb-modal" style="display:none;">
+  <div class="tb-modal-content tb-payment-modal">
+
+    <div class="tb-modal-header">
+      <h3>Collect Payment</h3>
+      <button type="button" onclick="closePaymentModal()" class="">✕</button>
+    </div>
+
+    <p><b id="pmShopName"></b></p>
+
+    <p>Gross Amount: ₹ <span id="pmGross"></span></p>
+    <p class="text-warning">Already Paid: − ₹ <span id="pmDiscount"></span></p>
+    <p><b>Remaining Bill: ₹ <span id="pmBill"></span></b></p>
+
+    <input type="hidden" id="pmOrderId">
+    <input type="hidden" id="pmShopId">
+
+    <div class="tb-form-group">
+      <label>Collect Amount (₹)</label>
+      <input type="number" id="pmPaid" class="tb-input-dark" min="1">
+    </div>
+
+    <div class="tb-form-group">
+      <label>Payment Method</label><br>
+      <label>
+        <input type="radio" name="pmMethod" value="COD" checked> Cash
+      </label>
+      <label>
+        <input type="radio" name="pmMethod" value="ONLINE"> Online
+      </label>
+    </div>
+
+    <div class="tb-form-group">
+      <label>Note</label>
+      <textarea id="pmNote" class="tb-textarea-dark"></textarea>
+    </div>
+
+    <div class="tb-modal-actions">
+      <button type="button" class="tb-btn-primary" onclick="submitPayment()">
+        Record
+      </button>
+
+      <button type="button" class="tb-btn-secondary" onclick="closePaymentModal()">
+        Cancel
+      </button>
+    </div>
+
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+/* ================= TOAST CONFIG ================= */
+const Toast = Swal.mixin({
+  toast: true,
+  position: "bottom-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  background: "#0f172a",   // dark theme
+  color: "#ffffff",
+  didOpen: (toast) => {
+    toast.addEventListener("mouseenter", Swal.stopTimer);
+    toast.addEventListener("mouseleave", Swal.resumeTimer);
+  }
+});
+
+function showSuccess(msg) {
+  Toast.fire({
+    icon: "success",
+    title: msg,
+    iconColor: "#22c55e"
+  });
+}
+
+function showError(msg) {
+  Toast.fire({
+    icon: "error",
+    title: msg,
+    iconColor: "#ef4444"
+  });
+}
+
+function openPaymentModal(orderId, shopId, shopName, total, paid, remaining) {
+  total = Number(total);
+  paid = Number(paid);
+  remaining = Number(remaining);
+
+  document.getElementById("pmOrderId").value = orderId;
+  document.getElementById("pmShopId").value = shopId;
+  document.getElementById("pmShopName").innerText = shopName;
+
+  document.getElementById("pmGross").innerText = total.toFixed(2);
+  document.getElementById("pmDiscount").innerText = paid.toFixed(2);
+  document.getElementById("pmBill").innerText = remaining.toFixed(2);
+
+  document.getElementById("pmPaid").value = remaining;
+  document.getElementById("pmNote").value = "";
+
+  document.getElementById("paymentModal").style.display = "flex";
+}
+
+
+function closePaymentModal() {
+  document.getElementById("paymentModal").style.display = "none";
+}
+
+
+async function submitPayment() {
+
+  const payload = {
+    orderId: document.getElementById("pmOrderId").value,
+    shopId: document.getElementById("pmShopId").value,
+    paidAmount: Number(document.getElementById("pmPaid").value),
+    method: document.querySelector("input[name='pmMethod']:checked").value,
+    note: document.getElementById("pmNote").value
+  };
+
+  if (!payload.orderId || !payload.shopId) {
+    showError("Order or Shop missing");
+    return;
+  }
+
+  if (payload.paidAmount <= 0) {
+    showError("Enter a valid amount");
+    return;
+  }
+
+  try {
+    const res = await fetch("/sales/collect-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+      showSuccess("Payment recorded successfully");
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      showError(result.message || "Payment failed");
+    }
+
+  } catch (err) {
+    console.error(err);
+    showError("Server error");
+  }
+}
+</script>

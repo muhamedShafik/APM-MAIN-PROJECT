@@ -1,0 +1,132 @@
+<%- include('partials/header', { title }) %>
+<%- include('partials/sidebar', { active: 'balance' }) %>
+
+<div class="content">
+
+  <%- include('partials/topbar', { title, user }) %>
+
+  <!-- SEARCH BAR -->
+  <div class="tb-search-box mb-3">
+    <form method="GET" action="/sales/shopbalance" class="tb-search-box mb-3">
+  <input
+    type="text"
+    name="search"
+    value="<%= search || '' %>"
+    class="tb-search-input"
+    placeholder="Search shop / phone / location"
+  />
+</form>
+
+  </div>
+
+  <!-- TABLE -->
+  <div class="card-box">
+    <table class="table tb-table table-borderless align-middle mb-0">
+      <thead>
+        <tr>
+          <th>User Name</th>
+          <th>Phone</th>
+          <th>Area / Location</th>
+          <th>Outstanding Balance</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody id="balanceTable">
+        <% if (balances.length === 0) { %>
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+              No shops found
+            </td>
+          </tr>
+        <% } %>
+
+        <% balances.forEach(b => { %>
+          <tr class="balance-row">
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <img
+                  src="https://ui-avatars.com/api/?name=<%= b.name %>&background=111827&color=fff"
+                  width="28"
+                  height="28"
+                  style="border-radius:50%"
+                />
+                <%= b.name %>
+              </div>
+            </td>
+
+            <td><%= b.phone %></td>
+            <td><%= b.location %></td>
+
+            <td class="fw-semibold">
+  <% if (b.balance > 0) { %>
+    <!-- SHOP NEEDS TO PAY -->
+    <span class="text-danger">
+      ₹<%= b.balance %>
+    </span>
+
+  <% } else if (b.balance < 0) { %>
+    <!-- ADVANCE PAYMENT -->
+    <span class="text-success">
+      +₹<%= Math.abs(b.balance) %>
+    </span>
+
+  <% } else { %>
+    <!-- ZERO BALANCE -->
+    <span class="text-white">
+      ₹0
+    </span>
+  <% } %>
+</td>
+
+
+            <td>
+            <a href="/sales/shop/<%= b.id %>/summary" class="btn btn-outline-danger btn-sm">
+  View details
+</a>
+
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <div class="tb-pagination">
+  <div class="tb-pagination-info">
+    Page <%= page %> of <%= totalPages %>
+  </div>
+
+  <div class="tb-pagination-actions">
+    <% if (page > 1) { %>
+      <a
+        href="?page=<%= page - 1 %>&search=<%= search %>"
+        class="tb-page-btn"
+      >
+        Previous
+      </a>
+    <% } else { %>
+      <span class="tb-page-btn tb-page-btn--disabled">Previous</span>
+    <% } %>
+
+    <% if (page < totalPages) { %>
+      <a
+        href="?page=<%= page + 1 %>&search=<%= search %>"
+        class="tb-page-btn tb-page-btn--primary"
+      >
+        Next
+      </a>
+    <% } else { %>
+      <span class="tb-page-btn tb-page-btn--disabled">Next</span>
+    <% } %>
+  </div>
+</div>
+
+  </div>
+
+</div>
+
+<!-- SEARCH FILTER -->
+<script>
+  
+</script>
+
+<%- include('partials/footer') %>

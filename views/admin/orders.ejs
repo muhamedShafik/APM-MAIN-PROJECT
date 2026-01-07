@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>
+        <%= title || 'TomatoBox Admin – Orders' %>
+    </title>
+
+    <style>
+        /* 
+sweet alert */
+
+
+
+
+        .swal2-container {
+            background: rgba(0, 0, 0, 0.75) !important;
+        }
+
+
+        .dark-swal-popup {
+            background: rgba(15, 15, 15, 0.9) !important;
+            color: #ffffff !important;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+
+        .dark-swal-title {
+            color: #ffffff !important;
+            font-size: 16px;
+        }
+
+
+        .dark-swal-text {
+            color: #e5e7eb !important;
+        }
+
+
+        body {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            caret-color: transparent;
+        }
+
+
+
+        /* ---------------- GLOBAL RESET ---------------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        /* ---------------- BODY + THEME ---------------- */
+        .tb-body {
+            background: #020617;
+            color: #e5e7eb;
+            min-height: 100vh;
+        }
+
+        .tb-shell {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ---------------- SIDEBAR ---------------- */
+        .tb-sidebar {
+            width: 220px;
+            background: #0b1120;
+            padding: 16px 12px;
+            border-right: 1px solid #111827;
+        }
+
+        .tb-logo {
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #f9fafb;
+            font-size: 17px;
+        }
+
+        .tb-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .tb-nav-item {
+            padding: 8px 10px;
+            border-radius: 6px;
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+        }
+
+        .tb-nav-item--active,
+        .tb-nav-item:hover {
+            background: #111827;
+            color: #e5e7eb;
+        }
+
+        /* ---------------- MAIN AREA ---------------- */
+        .tb-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #020617;
+        }
+
+        /* ---------------- TOPBAR ---------------- */
+        .tb-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 24px;
+            border-bottom: 1px solid #111827;
+            position: sticky;
+            top: 0;
+            background: #020617;
+            z-index: 10;
+        }
+  /* ===== SWEET ALERT DARK ===== */
+.tb-swal-popup {
+  background: #0b1120 !important;
+  color: #e5e7eb !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.7) !important;
+}
+
+.tb-swal-title {
+  color: #e5e7eb !important;
+  font-size: 15px !important;
+}
+
+.swal2-icon {
+  margin: 10px auto !important;
+}
+
+        .tb-topbar-title h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f9fafb;
+        }
+
+        /* Orders Pagination */
+        .tb-pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #020617;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+        }
+
+        .tb-pagination-info {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .tb-pagination-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tb-page-btn {
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            text-decoration: none;
+            background: #1f2937;
+            color: #e5e7eb;
+            border: 1px solid #374151;
+            transition: background 0.15s ease;
+        }
+
+        .tb-page-btn:hover {
+            background: #374151;
+        }
+
+        .tb-page-btn--primary {
+            background: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        .tb-page-btn--primary:hover {
+            background: #6366f1;
+        }
+
+        .tb-page-btn--disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* USER MENU */
+        .tb-user-menu {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #020617;
+            border: 1px solid #1f2937;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tb-user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #1f2937;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e5e7eb;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .tb-user-text {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .tb-user-name {
+            font-size: 13px;
+            color: #fff;
+        }
+
+        .tb-user-role {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .tb-user-caret {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* DROPDOWN */
+        .tb-user-dropdown {
+            position: absolute;
+            right: 0;
+            top: 110%;
+            min-width: 160px;
+            background: #020617;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 6px 0;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 50;
+        }
+
+        .tb-user-menu.tb-user-menu--open .tb-user-dropdown {
+            display: block;
+        }
+
+        .tb-user-dropdown a,
+        .tb-user-dropdown button {
+            width: 100%;
+            padding: 8px 14px;
+            background: transparent;
+            border: none;
+            text-align: left;
+            color: #e5e7eb;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .tb-user-dropdown a:hover,
+        .tb-user-dropdown button:hover {
+            background: #111827;
+        }
+
+        /* ---------------- CONTENT ---------------- */
+        .tb-content {
+            padding: 24px 28px;
+        }
+
+        .tb-section {
+            margin-bottom: 28px;
+        }
+
+        .tb-section h2 {
+            margin-bottom: 12px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        /* ---------------- FORM + INPUTS ---------------- */
+        .tb-card {
+            background: #0b1120;
+            border-radius: 10px;
+            padding: 16px 18px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.6);
+            border: 1px solid #111827;
+        }
+
+        .tb-form-row {
+            margin-bottom: 14px;
+        }
+
+        .tb-label {
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: #9ca3af;
+        }
+
+        .tb-input {
+            width: 100%;
+            padding: 9px 10px;
+            border-radius: 8px;
+            border: 1px solid #1f2937;
+            background: #020617;
+            color: #e5e7eb;
+            font-size: 13px;
+            outline: none;
+            transition: 0.15s;
+        }
+
+        .tb-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.4);
+        }
+
+        .tb-btn-primary {
+            width: 100%;
+            padding: 10px;
+            background: #4f46e5;
+            color: #fff;
+            font-size: 14px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: 0.2s;
+        }
+
+        .tb-btn-primary:hover {
+            background: #6366f1;
+            transform: translateY(-1px);
+        }
+
+        /* ---------------- TABLE ---------------- */
+        .tb-table {
+            width: 100%;
+            background: #0b1120;
+            border-radius: 10px;
+            overflow: hidden;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .tb-table th,
+        .tb-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #1f2937;
+            text-align: left;
+        }
+
+        .tb-table th {
+            background: #020617;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        .tb-icon-btn {
+            background: transparent;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            margin-right: 4px;
+            color: #e5e7eb;
+        }
+
+        .tb-icon-btn--danger {
+            color: #fca5a5;
+        }
+
+        /* ---------------- FOOTER ---------------- */
+        .tb-footer {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .tb-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        /* Date input text */
+        .tb-input[type="date"] {
+            color: #e5e7eb;
+        }
+
+        /* Calendar icon */
+        .tb-input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        .tb-modal-content {
+            background: #0b1120;
+            padding: 20px;
+            border-radius: 12px;
+            width: 320px;
+            border: 1px solid #1f2937;
+        }
+
+        .tb-modal-close {
+            margin-top: 12px;
+            padding: 10px;
+            width: 100%;
+            background: #1f2937;
+            color: #fff;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+    </style>
+
+</head>
+
+<body class="tb-body">
+    <div class="tb-shell">
+
+        <!-- SIDEBAR -->
+        <aside class="tb-sidebar">
+            <div class="tb-logo" style="font-size: 22px;">TomatoBox</div>
+            <nav class="tb-nav">
+                <a href="/admin/dashboard" class="tb-nav-item">Dashboard</a>
+                <a href="/admin/orders" class="tb-nav-item tb-nav-item--active">Orders</a>
+                <a href="/admin/daily-prices" class="tb-nav-item">Daily Prices</a>
+                <a href="/admin/users" class="tb-nav-item">Users</a>
+                <a href="/admin/payments" class="tb-nav-item">Payments</a>
+            </nav>
+        </aside>
+
+        <!-- MAIN AREA -->
+        <main class="tb-main">
+
+            <!-- TOPBAR -->
+            <header class="tb-topbar">
+                <div class="tb-topbar-title">
+                    <h1>Orders</h1>
+                </div>
+                <div class="tb-topbar-user">
+                    <div class="tb-user-menu">
+                        <div class="tb-user-avatar">
+                            <span>
+                                <%= (user && user.name ? user.name[0] : 'A' ).toUpperCase() %>
+                            </span>
+                        </div>
+                        <div class="tb-user-text">
+                            <p class="tb-user-name">
+                                <%= user && user.name ? user.name : 'Arun Kumar' %>
+                            </p>
+                            <p class="tb-user-role">
+                                <%= user && user.role ? user.role : 'Admin' %>
+                            </p>
+                        </div>
+                        <button class="tb-user-caret" type="button">▾</button>
+
+                        <div class="tb-user-dropdown">
+
+                            <a href="/admin/logout"
+                                style="color:#e5e7eb; display:block; padding:8px 14px;text-decoration: none;">
+                                Logout
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- CONTENT -->
+            <div class="tb-content">
+
+                <!-- DATE PICKER -->
+
+                </section>
+
+                <!-- CREATE ORDER -->
+                <!-- CREATE ORDER -->
+                <section class="tb-section">
+                    <h2>Create New Order</h2>
+
+                    <div class="tb-card tb-card--form">
+                        <form action="/admin/orders/create" method="POST">
+                            <section class="tb-section">
+                                <h2>Select Delivery Date</h2>
+                                <input type="date" class="tb-input" value="<%= deliveryDateValue %>" name="deliveryDate"
+                                    required />
+
+
+                                <!-- ROW 1: TWO INPUTS SIDE BY SIDE -->
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                                    <div class="tb-form-row" style="position:relative;">
+                                        <label class="tb-label">Search Shop</label>
+
+                                        <!-- Search input -->
+                                        <input type="text" id="shopSearch" class="tb-input"
+                                            placeholder="Type shop name or phone..." autocomplete="off" required />
+
+                                        <!-- Hidden field to store final selected shop ID -->
+                                        <input type="hidden" name="shop" id="selectedShopId" required>
+
+                                        <!-- Results box -->
+                                        <div id="shopResults" style="
+          position:absolute;
+          top:70px;
+          left:0;
+          right:0;
+          background:#0b1120;
+          border:1px solid #1f2937;
+          border-radius:10px;
+          display:none;
+          max-height:180px;
+          overflow-y:auto;
+          z-index:100;
+       ">
+                                        </div>
+                                    </div>
+
+
+                                    <div class="tb-form-row">
+                                        <label class="tb-label">Number of Boxes</label>
+                                        <input type="number" name="boxes" class="tb-input" placeholder="e.g., 50"
+                                            min="1" required />
+                                    </div>
+
+                                </div>
+
+                                <!-- FULL WIDTH INPUT -->
+                                <div class="tb-form-row">
+                                    <label class="tb-label">Discount per box (₹) – Optional</label>
+                                    <input type="number" name="discountPerBox" class="tb-input" placeholder="e.g., 10"
+                                        min="0" />
+                                </div>
+
+                                <!-- SAVE BUTTON FULL WIDTH -->
+                                <button type="submit" class="tb-btn-primary">Save Order</button>
+
+                        </form>
+                    </div>
+                </section>
+<!-- DATE FILTER -->
+<section class="tb-section">
+  <h2>Select Orders Date</h2>
+
+  <form method="GET" action="/admin/orders" class="tb-card">
+    <input
+      type="date"
+      name="date"
+      value="<%= deliveryDateValue %>"
+      class="tb-input"
+      onchange="this.form.submit()"
+    />
+  </form>
+</section>
+
+                <!-- ORDERS TABLE -->
+                <section class="tb-section">
+                    <h2>Orders for Selected Date</h2>
+
+                    <table class="tb-table">
+                        <thead>
+                            <tr>
+                                <th>Shop</th>
+                                <th>Boxes</th>
+                                <th>Discount</th>
+                                <th>location</th>
+                                <th>Date</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <% ordersForDate.forEach(o=> { %>
+                                <tr>
+                                    <td>
+                                        <%= o.shop.name %>
+                                    </td>
+                                    <td>
+                                        <%= o.boxes %>
+                                    </td>
+                                    <td>₹<%= o.discountPerBox %>
+                                    </td>
+                                    <td>
+                                        <%= o.shop.location || "N/A" %>
+                                    </td>
+                                    <td>
+                                        <%= o.deliveryDate %>
+                                    </td>
+                                   <td style="text-align:right;">
+  <% if (o.editable) { %>
+    <button class="tb-icon-btn"
+      onclick="openEditModal('<%= o._id %>')">✏️</button>
+
+    <button class="tb-icon-btn tb-icon-btn--danger"
+      onclick="openDeleteModal('<%= o._id %>')">✖️</button>
+  <% } else { %>
+    <span style="color:#6b7280;font-size:12px;">  🔒 Locked</span>
+  <% } %>
+</td>
+
+
+                                </tr>
+                                <% }) %>
+                        </tbody>
+
+                    </table>
+                    <!-- PAGINATION -->
+                    <!-- PAGINATION -->
+                    <div class="tb-pagination">
+                        <div class="tb-pagination-info">
+                            Page <strong>
+                                <%= page %>
+                            </strong> of <strong>
+                                <%= totalPages %>
+                            </strong>
+                        </div>
+
+                        <div class="tb-pagination-actions">
+                            <% if (page> 1) { %>
+                                <a href="/admin/orders?page=<%= page - 1 %>" class="tb-page-btn">
+                                    Previous
+                                </a>
+                                <% } else { %>
+                                    <span class="tb-page-btn tb-page-btn--disabled">Previous</span>
+                                    <% } %>
+
+                                        <% if (page < totalPages) { %>
+                                            <a href="/admin/orders?page=<%= page + 1 %>"
+                                                class="tb-page-btn tb-page-btn--primary">
+                                                Next
+                                            </a>
+                                            <% } else { %>
+                                                <span class="tb-page-btn tb-page-btn--disabled">Next</span>
+                                                <% } %>
+                        </div>
+                    </div>
+
+
+                </section>
+
+                <footer class="tb-footer">
+                    © <%= new Date().getFullYear() %> TomatoBox Admin. All rights reserved.
+                </footer>
+
+            </div>
+        </main>
+
+    </div>
+
+    <!-- edit modal  -->
+    <!-- ===================== EDIT ORDER MODAL ===================== -->
+    <div id="editOrderModal" class="tb-modal">
+        <div class="tb-modal-content">
+            <h3>Edit Order</h3>
+
+            <form id="editOrderForm" method="POST">
+                <input type="hidden" name="orderId" id="editOrderId">
+
+                <label class="tb-label">Number of Boxes</label>
+                <input type="number" class="tb-input" id="editBoxes" name="boxes" required>
+
+                <label class="tb-label">Discount Per Box</label>
+                <input type="number" class="tb-input" id="editDiscount" name="discountPerBox">
+
+                <label class="tb-label">Delivery Date</label>
+                <input type="date" class="tb-input" id="editDeliveryDate" name="deliveryDate">
+
+                <button class="tb-btn-primary" type="submit">Update Order</button>
+            </form>
+
+            <button class="tb-modal-close" onclick="closeEditModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- ===================== DELETE CONFIRM MODAL ===================== -->
+    <div id="deleteOrderModal" class="tb-modal">
+        <div class="tb-modal-content">
+            <h3>Delete Order?</h3>
+            <p>This action cannot be undone.</p>
+
+            <form id="deleteOrderForm" method="POST">
+                <input type="hidden" id="deleteOrderId" name="orderId">
+                <button class="tb-btn-primary" style="background:#dc2626;" type="submit">Delete</button>
+            </form>
+
+            <button class="tb-modal-close" onclick="closeDeleteModal()">Cancel</button>
+        </div>
+    </div>
+
+
+    <script>
+
+
+/* ===== SWEET ALERT FOR CREATE ORDER ===== */
+const params = new URLSearchParams(window.location.search);
+
+function showDarkAlert(icon, message) {
+  Swal.fire({
+    icon: icon,
+    title: message,
+    width: 320,
+    padding: "1.2em",
+    timer: 2400,
+    showConfirmButton: false,
+    backdrop: "rgba(0,0,0,0.75)",
+    customClass: {
+      popup: "tb-swal-popup",
+      title: "tb-swal-title"
+    }
+  });
+
+  // ✅ clear params so alert doesn't repeat
+  const url = new URL(window.location);
+  url.searchParams.delete("success");
+  url.searchParams.delete("error");
+  window.history.replaceState({}, document.title, url.pathname);
+}
+
+if (params.get("success")) {
+  showDarkAlert("success", params.get("success"));
+}
+
+if (params.get("error")) {
+  showDarkAlert("error", params.get("error"));
+}
+
+
+
+
+
+        if (params.get("error")) {
+            showDarkAlert("error", "Error", params.get("error"));
+        }
+
+        if (params.get("success")) {
+            showDarkAlert("success", "Success", params.get("success"));
+        }
+
+
+
+
+
+
+        const menu = document.querySelector(".tb-user-menu");
+        const caret = document.querySelector(".tb-user-caret");
+
+        caret.addEventListener("click", (e) => {
+            e.stopPropagation();
+            menu.classList.toggle("tb-user-menu--open");
+        });
+
+        document.addEventListener("click", () => {
+            menu.classList.remove("tb-user-menu--open");
+        });
+
+
+        //   search bar  js
+
+        const searchInput = document.getElementById("shopSearch");
+        const resultsBox = document.getElementById("shopResults");
+        const hiddenShopId = document.getElementById("selectedShopId");
+
+        searchInput.addEventListener("input", async function () {
+            const q = this.value.trim();
+
+            if (!q) {
+                resultsBox.style.display = "none";
+                return;
+            }
+
+            const res = await fetch(`/admin/users/search?q=${q}`);
+            const users = await res.json();
+
+            if (!users.length) {
+                resultsBox.innerHTML = "<div style='padding:10px; color:#9ca3af;'>No shops found</div>";
+                resultsBox.style.display = "block";
+                return;
+            }
+
+            resultsBox.innerHTML = "";
+            users.forEach(u => {
+                const item = document.createElement("div");
+                item.style.padding = "10px";
+                item.style.cursor = "pointer";
+                item.style.borderBottom = "1px solid #1f2937";
+                item.style.color = "#e5e7eb";
+                item.innerHTML = `<b>${u.name}</b><br><small>${u.phone}</small>`;
+
+                item.onclick = () => {
+                    searchInput.value = u.name;
+                    hiddenShopId.value = u._id;
+                    resultsBox.style.display = "none";
+                };
+
+                resultsBox.appendChild(item);
+            });
+
+            resultsBox.style.display = "block";
+        });
+
+        // Hide when clicking away
+        document.addEventListener("click", e => {
+            if (e.target !== searchInput && !resultsBox.contains(e.target)) {
+                resultsBox.style.display = "none";
+            }
+        });
+
+        // edit order
+
+        async function openEditModal(id) {
+            const res = await fetch(`/admin/orders/${id}`);
+            const order = await res.json();
+
+            document.getElementById("editOrderId").value = id;
+            document.getElementById("editBoxes").value = order.boxes;
+            document.getElementById("editDiscount").value = order.discountPerBox;
+            document.getElementById("editDeliveryDate").value = order.deliveryDate;
+
+            document.getElementById("editOrderForm").action = `/admin/orders/${id}/update`;
+
+            document.getElementById("editOrderModal").style.display = "flex";
+        }
+
+        function closeEditModal() {
+            document.getElementById("editOrderModal").style.display = "none";
+        }
+
+        /* ================= DELETE ORDER ================= */
+        function openDeleteModal(id) {
+            document.getElementById("deleteOrderId").value = id;
+            document.getElementById("deleteOrderForm").action = `/admin/orders/${id}/delete`;
+            document.getElementById("deleteOrderModal").style.display = "flex";
+        }
+
+        function closeDeleteModal() {
+            document.getElementById("deleteOrderModal").style.display = "none";
+        }
+
+
+
+    </script>
+
+
+</body>
+
+</html>

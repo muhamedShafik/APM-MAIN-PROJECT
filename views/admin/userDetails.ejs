@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Details | TomatoBox</title>
+  <link rel="stylesheet" href="/public/admin.css" />
+</head>
+
+<body class="tb-body">
+<div class="tb-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="tb-sidebar">
+    <div class="tb-logo">TomatoBox</div>
+    <nav class="tb-nav">
+      <a href="/admin/dashboard" class="tb-nav-item">Dashboard</a>
+      <a href="/admin/orders" class="tb-nav-item">Orders</a>
+      <a href="/admin/daily-prices" class="tb-nav-item">Daily prices</a>
+      <a href="/admin/users" class="tb-nav-item tb-nav-item--active">Users</a>
+      <a href="/admin/payments" class="tb-nav-item">Payments</a>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="tb-main">
+
+    <!-- TOPBAR -->
+    <header class="tb-topbar">
+      <h1>User Details</h1>
+
+     <div class="tb-user-menu">
+  <div class="tb-user-avatar">
+    <span><%= user.name[0].toUpperCase() %></span>
+  </div>
+
+  <div class="tb-user-text">
+    <p class="tb-user-name"><%= user.name %></p>
+    <p class="tb-user-role"><%= user.role %></p>
+  </div>
+
+  <button class="tb-user-caret" type="button">▾</button>
+
+<div class="tb-user-dropdown">
+  <a href="/admin/logout" class="tb-logout-btn">Logout</a>
+</div>
+
+</div>
+
+    </header>
+
+    <!-- CONTENT -->
+    <div class="tb-content">
+
+      <!-- USER HEADER -->
+      <div class="tb-users-header">
+        <div>
+          <h2><%= viewedUser.name %></h2>
+          <p class="tb-users-subtitle">
+            <%= viewedUser.phone %> • <%= viewedUser.location %>
+          </p>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <a href="/admin/users" class="tb-btn-outline">← Back to Users</a>
+          <form action="/admin/users/<%= viewedUser._id %>/toggle-block" method="POST">
+  <% if (viewedUser.blocked) { %>
+    <button class="tb-btn-outline">Unblock</button>
+  <% } else { %>
+    <button class="tb-btn-danger">Block</button>
+  <% } %>
+</form>
+
+        </div>
+      </div>
+
+      <!-- ================= SALESMAN VIEW ================= -->
+     <% if (viewedUser.role === 'salesman') { %>
+
+<form method="GET" class="tb-filter-bar">
+  <input type="date" name="from" class="tb-input" value="<%= from || '' %>">
+  <input type="date" name="to" class="tb-input" value="<%= to || '' %>">
+  <button class="tb-btn-outline">Filter</button>
+</form>
+
+<div class="tb-card tb-card--table">
+  <table class="tb-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Shop</th>
+        <th>Boxes</th>
+        <th>Price/Box</th>
+        <th>Total</th>
+        <th>Collected</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% collections.forEach(c => { %>
+      <tr>
+        <td><%= c.date %></td>
+        <td><%= c.shop %></td>
+        <td><%= c.boxes %></td>
+        <td>₹<%= c.pricePerBox %></td>
+        <td>₹<%= c.total %></td>
+        <td class="text-success">₹<%= c.collected %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<% } 
+else { %>
+
+      <!-- ================= SHOP VIEW ================= -->
+
+      <!-- TABS -->
+      <div class="tb-tabs">
+        <a class="tb-tab <%= tab==='summary'?'active':'' %>" href="?tab=summary">Summary</a>
+        <a class="tb-tab <%= tab==='orders'?'active':'' %>" href="?tab=orders">Orders</a>
+        <a class="tb-tab <%= tab==='payments'?'active':'' %>" href="?tab=payments">Payments</a>
+      </div>
+
+      <!-- ===== SUMMARY ===== -->
+      <% if (tab === 'summary') { %>
+      <div class="summary-grid">
+        <div class="tb-card"><p>Total Boxes</p><h3><%= summary.boxes %></h3></div>
+        <div class="tb-card"><p>Total Amount</p><h3>₹<%= summary.amount %></h3></div>
+        <div class="tb-card"><p>Total Paid</p><h3>₹<%= summary.paid %></h3></div>
+        <div class="tb-card">
+  <p>Balance</p>
+
+  <% if (summary.balance > 0) { %>
+    <h3 class="text-danger">₹<%= summary.balance %></h3>
+
+  <% } else if (summary.balance < 0) { %>
+    <h3 class="text-success">
+      +₹<%= Math.abs(summary.balance) %>
+    </h3>
+
+  <% } else { %>
+    <h3 class="text-muted">₹0</h3>
+  <% } %>
+</div>
+
+      </div>
+      <% } %>
+
+      <!-- ===== ORDERS ===== -->
+      <% if (tab === 'orders') { %>
+
+     <form method="GET" class="tb-filter-bar">
+  <input type="hidden" name="tab" value="orders">
+
+  <input type="date" name="from" class="tb-input" value="<%= from || '' %>">
+  <input type="date" name="to" class="tb-input" value="<%= to || '' %>">
+
+  <button type="submit" class="tb-btn-outline">Filter</button>
+</form>
+
+
+      <div class="tb-card tb-card--table">
+        <table class="tb-table">
+         <thead>
+  <tr>
+    <th>Date</th>
+    <th>Boxes</th>
+    <th>Price/Box</th>
+    <th>Discount</th>
+    <th>Total</th>
+    <th>Status</th>
+  </tr>
+</thead>
+
+         <tbody>
+  <% orders.forEach(o => { %>
+    <tr>
+      <td><%= o.date %></td>
+
+      <td><%= o.boxes %></td>
+
+      <td>₹<%= o.pricePerBox %></td>
+
+      <td class="text-warning">
+        −₹<%= o.discountPerBox %>
+      </td>
+
+      <td class="fw-bold">
+        ₹<%= o.total %>
+      </td>
+
+      <td>
+        <% if (o.status === "Paid") { %>
+          <span class="tb-pill tb-pill--green">Paid</span>
+        <% } else if (o.status === "Partial") { %>
+          <span class="tb-pill">Partial</span>
+        <% } else { %>
+          <span class="tb-pill tb-pill--danger">Pending</span>
+        <% } %>
+      </td>
+    </tr>
+  <% }) %>
+</tbody>
+
+        </table>
+        <div class="tb-pagination">
+
+  <!-- LEFT -->
+  <div class="tb-pagination-info">
+    Page <%= page %> of <%= totalPages %>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="tb-pagination-actions">
+
+    <!-- Previous -->
+    <% if (page > 1) { %>
+      <a
+        href="?page=<%= page - 1 %>&date=<%= deliveryDateValue %>"
+        class="tb-page-btn"
+      >
+        Previous
+      </a>
+    <% } else { %>
+      <span class="tb-page-btn tb-page-btn--disabled">Previous</span>
+    <% } %>
+
+    <!-- Next -->
+    <% if (page < totalPages) { %>
+      <a
+        href="?page=<%= page + 1 %>&date=<%= deliveryDateValue %>"
+        class="tb-page-btn"
+      >
+        Next
+      </a>
+    <% } else { %>
+      <span class="tb-page-btn tb-page-btn--disabled">Next</span>
+    <% } %>
+
+  </div>
+</div>
+
+      </div>
+
+      <% } %>
+
+      <!-- ===== PAYMENTS ===== -->
+      <% if (tab === 'payments') { %>
+
+     <form method="GET" class="tb-filter-bar">
+  <input type="hidden" name="tab" value="payments">
+
+  <input type="date" name="from" class="tb-input" value="<%= from || '' %>">
+  <input type="date" name="to" class="tb-input" value="<%= to || '' %>">
+
+  <button type="submit" class="tb-btn-outline">Filter</button>
+</form>
+
+
+      <div class="tb-card tb-card--table">
+        <table class="tb-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Boxes</th>
+              <th>Price/Box</th>
+              <th>Total</th>
+              <th>Paid</th>
+              <th>Balance</th>
+              <th>Method</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% payments.forEach(p => { %>
+            <tr>
+              <td><%= p.date %></td>
+              <td><%= p.boxes %></td>
+              <td>₹<%= p.pricePerBox %></td>
+              <td>₹<%= p.total %></td>
+              <td>₹<%= p.paid %></td>
+             <td>
+  <% if (p.balance > 0) { %>
+    <span class="text-danger">₹<%= p.balance %></span>
+  <% } else if (p.balance < 0) { %>
+    <span class="text-success">+₹<%= Math.abs(p.balance) %></span>
+  <% } else { %>
+    <span class="text-muted">₹0</span>
+  <% } %>
+</td>
+
+              <td><%= p.method %></td>
+              <td><%= p.note || '-' %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <div class="tb-pagination">
+
+  <!-- LEFT -->
+  <div class="tb-pagination-info">
+    Page <%= page %> of <%= totalPages %>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="tb-pagination-actions">
+
+    <!-- Previous -->
+    <% if (page > 1) { %>
+      <a
+        href="?page=<%= page - 1 %>&date=<%= deliveryDateValue %>"
+        class="tb-page-btn"
+      >
+        Previous
+      </a>
+    <% } else { %>
+      <span class="tb-page-btn tb-page-btn--disabled">Previous</span>
+    <% } %>
+
+    <!-- Next -->
+    <% if (page < totalPages) { %>
+      <a
+        href="?page=<%= page + 1 %>&date=<%= deliveryDateValue %>"
+        class="tb-page-btn"
+      >
+        Next
+      </a>
+    <% } else { %>
+      <span class="tb-page-btn tb-page-btn--disabled">Next</span>
+    <% } %>
+
+  </div>
+</div>
+
+      </div>
+
+      <% } %>
+
+      <% } %>
+
+      <footer class="tb-footer">
+        © <%= new Date().getFullYear() %> TomatoBox Admin. All rights reserved.
+      </footer>
+
+    </div>
+  </main>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const userMenu = document.querySelector(".tb-user-menu");
+  const caret = document.querySelector(".tb-user-caret");
+
+  // Toggle dropdown
+  caret.addEventListener("click", (e) => {
+    e.stopPropagation();
+    userMenu.classList.toggle("tb-user-menu--open");
+  });
+
+  // Close when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!userMenu.contains(e.target)) {
+      userMenu.classList.remove("tb-user-menu--open");
+    }
+  });
+});
+</script>
+
+<style>
+/* ================= ROOT THEME ================= */
+:root {
+  --bg-main: #020617;
+  --bg-card: #0b1120;
+  --bg-hover: #111827;
+  --border: #1f2937;
+
+  --text-main: #e5e7eb;
+  --text-muted: #9ca3af;
+  --text-white: #f9fafb;
+
+  --brand: #ef4444;
+  --brand-soft: #f97373;
+  --brand-dark: #b91c1c;
+
+  --success-bg: #16a34a33;
+  --success-text: #4ade80;
+}
+
+/* ================= BASE ================= */
+* {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.tb-body {
+  margin: 0;
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+.tb-shell {
+  display: flex;
+  min-height: 100vh;
+}
+/* USER MENU */
+.tb-user-menu {
+  position: relative;
+  cursor: pointer;
+}
+
+/* CARET – NO BACKGROUND */
+.tb-user-caret {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* DROPDOWN BOX */
+.tb-user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);   /* BELOW the user menu */
+  right: 0;
+  min-width: 160px;
+  background: #020617;    /* dark background */
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  padding: 6px;
+  display: none;
+  z-index: 50;
+}
+
+/* SHOW DROPDOWN */
+.tb-user-menu.tb-user-menu--open .tb-user-dropdown {
+  display: block;
+}
+
+/* LOGOUT BUTTON */
+.tb-logout-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #ef4444;              /* 🔴 RED TEXT */
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  background: transparent;
+}
+
+/* HOVER EFFECT */
+.tb-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.12); /* soft red bg */
+}
+
+
+/* ================= SIDEBAR ================= */
+.tb-sidebar {
+  width: 220px;
+  background: var(--bg-card);
+  padding: 16px 12px;
+  border-right: 1px solid var(--border);
+}
+
+.tb-logo {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: var(--text-white);
+}
+
+.tb-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tb-nav-item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--text-main);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.tb-nav-item:hover,
+.tb-nav-item--active {
+  background: var(--bg-hover);
+}
+
+/* ================= MAIN / TOPBAR ================= */
+.tb-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tb-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-main);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tb-topbar h1 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-white);
+}
+
+/* ================= USER MENU ================= */
+.tb-user-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+}
+
+.tb-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+.tb-user-dropdown {
+  display: none;
+}
+
+.tb-user-menu.tb-user-menu--open .tb-user-dropdown {
+  display: block;
+}
+
+
+.tb-user-name {
+  font-size: 13px;
+  margin: 0;
+}
+
+.tb-user-role {
+  font-size: 11px;
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* ================= CONTENT ================= */
+.tb-content {
+  padding: 20px 28px;
+}
+
+.tb-users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.tb-users-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ================= BUTTONS ================= */
+.tb-btn-outline {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--brand-soft);
+  background: transparent;
+  color: #fecaca;
+  text-decoration: none;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tb-btn-outline:hover {
+  background: var(--brand-dark);
+  color: #fee2e2;
+}
+
+.tb-btn-danger {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  background: var(--brand);
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.tb-btn-danger:hover {
+  background: var(--brand-soft);
+}
+
+/* ================= TABS ================= */
+.tb-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tb-tab {
+  padding: 8px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 13px;
+  color: var(--text-main);
+  border: 1px solid var(--border);
+}
+
+.tb-tab.active {
+  background: var(--brand);
+  color: white;
+  border-color: var(--brand);
+}
+.tb-pagination {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #020617;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid #1f2937;
+}
+
+.tb-pagination-info {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.tb-pagination-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.tb-page-btn {
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  text-decoration: none;
+  background: #020617;
+  color: #e5e7eb;
+  border: 1px solid #1f2937;
+}
+
+.tb-page-btn:hover {
+  background: #111827;
+}
+
+.tb-page-btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ================= CARDS ================= */
+.tb-card {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.summary-grid h3 {
+  margin: 4px 0 0;
+}
+
+/* ================= TABLE ================= */
+.tb-card--table {
+  padding: 0;
+  overflow: hidden;
+}
+
+.tb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tb-table th,
+.tb-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tb-table th {
+  background: var(--bg-main);
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.tb-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+/* ================= STATUS ================= */
+.tb-pill {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.tb-pill--green {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+/* ================= FILTER BAR ================= */
+.tb-filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tb-input {
+  padding: 8px 10px;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  border-radius: 8px;
+}
+
+/* ================= FOOTER ================= */
+.tb-footer {
+  margin-top: 24px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+/* Date input text */
+.tb-input[type="date"] {
+  color: #e5e7eb;
+}
+
+/* Calendar icon */
+.tb-input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .tb-shell {
+    flex-direction: column;
+  }
+
+  .tb-sidebar {
+    width: 100%;
+  }
+}
+/* ===== TEXT COLORS (Bootstrap-like helpers) ===== */
+.text-danger {
+  color: #ef4444; /* red */
+}
+
+.text-success {
+  color: #22c55e; /* green */
+}
+
+.text-muted {
+  color: #9ca3af; /* gray */
+}
+
+</style>
+
+</body>
+</html>

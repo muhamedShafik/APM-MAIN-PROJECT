@@ -1,0 +1,180 @@
+<div class="bill-card-dark">
+  <div class="py-4 px-4">
+
+    <h3 class="bill-title">Today's Bill</h3>
+    <p class="bill-date"><%= todayDate %></p>
+
+    <div class="bill-row">
+      <span>Boxes Sold</span>
+      <strong><%= boxes %></strong>
+    </div>
+
+    <div class="bill-row">
+      <span>Price / Box</span>
+      <strong>₹ <%= pricePerBox.toFixed(2) %></strong>
+    </div>
+
+    <div class="bill-row warning">
+      <span>Discount / Box</span>
+      <strong>− ₹ <%= discountPerBox.toFixed(2) %></strong>
+    </div>
+
+    <div class="bill-row">
+      <span>Gross Total</span>
+      <strong>₹ <%= grossTotal.toFixed(2) %></strong>
+    </div>
+
+    <div class="bill-row danger">
+      <span>Total Discount</span>
+      <strong>− ₹ <%= discountTotal.toFixed(2) %></strong>
+    </div>
+
+    <hr />
+
+    <div class="bill-row">
+      <span>Final Amount</span>
+      <strong class="bill-amount">
+        ₹ <%= totalAmount.toFixed(2) %>
+      </strong>
+    </div>
+
+    <div class="bill-row success">
+      <span>Paid Today</span>
+      <strong>₹ <%= paidToday.toFixed(2) %></strong>
+    </div>
+
+    <div class="bill-row danger">
+      <span>Remaining Today</span>
+      <strong>₹ <%= remainingToday.toFixed(2) %></strong>
+    </div>
+
+    <div class="bill-row warning">
+      <span>Shop Outstanding</span>
+      <strong>₹ <%= shopOutstanding.toFixed(2) %></strong>
+    </div>
+
+    <% if (isFullyPaid) { %>
+      <button class="btn-paid" disabled>
+        ✓ Paid Today
+      </button>
+    <% } else { %>
+      <input
+  type="number"
+  id="payAmount"
+  class="tb-input-dark w-full mt-3 py-2 rounded-3"
+  placeholder="Enter amount"
+  min="1"
+  required
+/>
+
+
+      <button
+        class="btn-primary w-full mt-3 py-2 rounded-2"
+        id="payOnlineBtn"
+        data-order="<%= orderId %>">
+        Pay Online
+      </button>
+    <% } %>
+
+  </div>
+</div>
+<script>
+const payBtn = document.getElementById("payOnlineBtn");
+const payInput = document.getElementById("payAmount");
+
+if (payBtn && payInput) {
+  payBtn.addEventListener("click", () => {
+    const amount = Number(payInput.value);
+    const maxAmount = Number(payInput.max);
+    const orderId = payBtn.dataset.order;
+
+    /* ===== VALIDATION ===== */
+    if (!amount || isNaN(amount)) {
+      Toast.fire({
+        icon: "error",
+        title: "Enter a valid amount"
+      });
+      payInput.focus();
+      return;
+    }
+
+    if (amount <= 0) {
+      Toast.fire({
+        icon: "error",
+        title: "Amount must be greater than zero"
+      });
+      payInput.focus();
+      return;
+    }
+
+    
+
+    /* ===== OPEN RAZORPAY ===== */
+    payWithRazorpay(orderId, amount);
+  });
+
+  /* AUTO LIMIT INPUT */
+  payInput.addEventListener("input", () => {
+    const max = Number(payInput.max);
+    if (Number(payInput.value) > max) {
+      payInput.value = max;
+    }
+  });
+}
+
+/* ===== RAZORPAY FLOW ===== */
+async function payWithRazorpay(orderId, amount) {
+  const res = await fetch("/payment/razorpay/order", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ amount })
+  });
+
+  const data = await res.json();
+
+  if (!data.success) {
+    Toast.fire({
+      icon: "error",
+      title: "Unable to create payment"
+    });
+    return;
+  }
+
+  const rzp = new Razorpay({
+    key: "<%= process.env.RAZORPAY_KEY_ID %>",
+    amount: data.order.amount,
+    currency: "INR",
+    order_id: data.order.id,
+    handler: async (response) => {
+      const verify = await fetch("/payment/razorpay/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature,
+          orderId,
+          paidAmount: amount
+        })
+      });
+
+      const result = await verify.json();
+
+      if (result.success) {
+        Toast.fire({
+          icon: "success",
+          title: "Payment successful"
+        });
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        Toast.fire({
+          icon: "error",
+          title: result.message || "Payment failed"
+        });
+      }
+    }
+  });
+
+  rzp.open();
+}
+</script>

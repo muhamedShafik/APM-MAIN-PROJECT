@@ -1,0 +1,111 @@
+<!-- DATE FILTER -->
+<div class="card-box mb-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label">From</label>
+      <input type="date" id="paymentsFrom" class="tb-input-dark">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">To</label>
+      <input type="date" id="paymentsTo" class="tb-input-dark ">
+    </div>
+    <div class="col-md-4">
+      <button class="btn btn-primary" onclick="applyPaymentsFilter()">Apply Filters</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENTS TABLE -->
+<div class="card-box">
+  <table class="table tb-table align-middle">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Boxes</th>
+        <th>Price / Box</th>
+        <th>Total (₹)</th>
+        <th>Paid (₹)</th>
+        <th>Balance (₹)</th>
+        <th>Method</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+
+   <tbody id="paymentsTable">
+  <% transactions.forEach(t => { %>
+    <tr class="payment-row" data-date="<%= t.date %>">
+      <td><%= t.date %></td>
+      <td><%= t.boxes %></td>
+      <td>₹<%= t.pricePerBox %></td>
+      <td>₹<%= t.total %></td>
+      <td class="text-warning">₹<%= t.paid %></td>
+
+      <td class="<%= t.balance > 0 ? 'text-danger' : 'text-success' %>">
+        ₹<%= Math.abs(t.balance) %>
+      </td>
+
+      <td>
+        <span class="badge bg-light text-dark"><%= t.method %></span>
+      </td>
+
+      <td><%= t.note || "-" %></td>
+    </tr>
+  <% }) %>
+</tbody>
+
+  </table>
+
+  <!-- PAGINATION -->
+  <div class="tb-pagination mt-3">
+    <div id="paymentsInfo" class="tb-pagination-info"></div>
+    <div class="tb-pagination-actions">
+      <button class="tb-page-btn" onclick="prevPayments()">Previous</button>
+      <button class="tb-page-btn tb-page-btn--primary" onclick="nextPayments()">Next</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========= PAYMENTS FILTER + PAGINATION ========= */
+const paymentRows = Array.from(document.querySelectorAll(".payment-row"));
+let filteredPayments = [...paymentRows];
+let paymentsPage = 1;
+const paymentsPerPage = 5;
+
+function renderPayments() {
+  paymentRows.forEach(r => r.style.display = "none");
+
+  const start = (paymentsPage - 1) * paymentsPerPage;
+  const end = start + paymentsPerPage;
+
+  filteredPayments.slice(start, end).forEach(r => r.style.display = "");
+
+  document.getElementById("paymentsInfo").innerText =
+    `Showing ${start + 1}-${Math.min(end, filteredPayments.length)} of ${filteredPayments.length}`;
+}
+
+function applyPaymentsFilter() {
+  const from = document.getElementById("paymentsFrom").value;
+  const to = document.getElementById("paymentsTo").value;
+
+  const fromDate = from ? new Date(from) : null;
+  const toDate = to ? new Date(to) : null;
+
+  paymentRows.forEach(row => {
+    const d = new Date(row.dataset.date);
+
+    let visible = true;
+    if (fromDate && d < fromDate) visible = false;
+    if (toDate && d > toDate) visible = false;
+
+    row.style.display = visible ? "" : "none";
+  });
+
+  // 🔥 DO NOT TOUCH ORDER
+  document.getElementById("paymentsInfo").innerText =
+    `Showing filtered results`;
+}
+
+
+
+</script>

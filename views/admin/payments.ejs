@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>
+    <%= title || "TomatoBox Admin – Payments" %>
+  </title>
+
+  <style>
+    /* ---------------- GLOBAL RESET ---------------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    /* ---------------- BODY ---------------- */
+    .tb-body {
+      background: #020617;
+      color: #e5e7eb;
+      min-height: 100vh;
+    }
+
+    .tb-shell {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ---------------- SIDEBAR ---------------- */
+    .tb-sidebar {
+      width: 220px;
+      background: #0b1120;
+      padding: 16px 12px;
+      border-right: 1px solid #111827;
+    }
+
+    .tb-logo {
+      font-weight: 600;
+      color: #f9fafb;
+      margin-bottom: 24px;
+      font-size: 17px;
+    }
+
+    .tb-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .tb-nav-item {
+      text-decoration: none;
+      color: #9ca3af;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      display: block;
+    }
+
+    .tb-nav-item--active,
+    .tb-nav-item:hover {
+      background: #111827;
+      color: #fff;
+    }
+
+    /* ---------------- MAIN AREA ---------------- */
+    .tb-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---------------- TOPBAR ---------------- */
+    .tb-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px;
+      border-bottom: 1px solid #111827;
+      background: #020617;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .tb-topbar-title h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .tb-user-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      cursor: pointer;
+      background: #020617;
+      position: relative;
+    }
+
+    .tb-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: #1f2937;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .tb-user-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .tb-user-name {
+      font-size: 13px;
+      color: #fff;
+    }
+
+    .tb-user-role {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .tb-user-caret {
+      border: none;
+      background: transparent;
+      color: #9ca3af;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    /* DROPDOWN MENU */
+    .tb-user-dropdown {
+      position: absolute;
+      right: 0;
+      top: 110%;
+      min-width: 160px;
+      background: #020617;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 6px 0;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+      display: none;
+      z-index: 50;
+    }
+
+    .tb-user-menu.tb-user-menu--open .tb-user-dropdown {
+      display: block;
+    }
+
+    body {
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      caret-color: transparent;
+    }
+
+    .tb-user-dropdown a,
+    .tb-user-dropdown button {
+      padding: 8px 14px;
+      font-size: 13px;
+      border: none;
+      background: transparent;
+      color: #e5e7eb;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .tb-user-dropdown a:hover,
+    .tb-user-dropdown button:hover {
+      background: #111827;
+    }
+
+    /* ---------------- CONTENT ---------------- */
+    .tb-content {
+      padding: 24px 28px;
+    }
+
+    .tb-section {
+      margin-bottom: 28px;
+    }
+
+    .tb-section h2 {
+      margin-bottom: 10px;
+      font-size: 15px;
+      color: #fff;
+    }
+
+    /* CARD */
+    .tb-card {
+      background: #0b1120;
+      border-radius: 10px;
+      padding: 16px;
+      border: 1px solid #111827;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.6);
+    }
+
+    /* FILTER ROW */
+    .tb-filters-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .tb-filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 180px;
+    }
+
+    .tb-label {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .tb-input,
+    .tb-select {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #e5e7eb;
+      outline: none;
+      font-size: 13px;
+    }
+
+    .tb-btn-primary {
+      padding: 9px 18px;
+      border-radius: 999px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .tb-btn-primary:hover {
+      background: #6366f1;
+    }
+
+    .tb-btn-secondary {
+      padding: 9px 18px;
+      border-radius: 999px;
+      background: transparent;
+      border: 1px solid #1f2937;
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    /* TABLE */
+    .tb-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #0b1120;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .tb-table th,
+    .tb-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #1f2937;
+      font-size: 13px;
+    }
+/* Date input text */
+.tb-input[type="date"] {
+  color: #e5e7eb;
+}
+
+/* Calendar icon */
+.tb-input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+    .tb-table th {
+      background: #020617;
+      text-align: left;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    .tb-badge-online {
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: #1d4ed8;
+      color: #fff;
+      font-size: 11px;
+    }
+
+    .tb-note {
+      font-size: 12px;
+      color: #d1d5db;
+      white-space: normal;
+    }
+
+    .tb-text-right {
+      text-align: right;
+    }
+
+    /* FOOTER */
+    .tb-footer {
+      margin-top: 24px;
+      font-size: 11px;
+      color: #9ca3af;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body class="tb-body">
+  <div class="tb-shell">
+
+    <!-- SIDEBAR -->
+    <aside class="tb-sidebar">
+      <div class="tb-logo" style="font-size: 22px;">TomatoBox</div>
+      <nav class="tb-nav">
+        <a href="/admin/dashboard" class="tb-nav-item">Dashboard</a>
+        <a href="/admin/orders" class="tb-nav-item">Orders</a>
+        <a href="/admin/daily-prices" class="tb-nav-item">Daily Prices</a>
+        <a href="/admin/users" class="tb-nav-item">Users</a>
+        <a href="/admin/payments" class="tb-nav-item tb-nav-item--active">Payments</a>
+      </nav>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <main class="tb-main">
+
+      <!-- TOPBAR -->
+      <header class="tb-topbar">
+        <div class="tb-topbar-title">
+          <h1>Payments</h1>
+        </div>
+
+        <div class="tb-topbar-user">
+          <div class="tb-user-menu">
+            <div class="tb-user-avatar">
+              <span>
+                <%= (user && user.name ? user.name[0] : 'A' ).toUpperCase() %>
+              </span>
+            </div>
+            <div class="tb-user-text">
+              <p class="tb-user-name">
+                <%= user && user.name ? user.name : 'Arun Kumar' %>
+              </p>
+              <p class="tb-user-role">
+                <%= user && user.role ? user.role : 'Admin' %>
+              </p>
+            </div>
+            <button class="tb-user-caret" type="button">▾</button>
+
+            <div class="tb-user-dropdown">
+
+              <a href="/admin/logout" style="color:#e5e7eb; display:block; padding:8px 14px;text-decoration: none;">
+                Logout
+              </a>
+
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT -->
+      <div class="tb-content">
+
+        <!-- FILTERS -->
+        <section class="tb-section">
+          <section class="tb-section">
+            <h2>Filters</h2>
+
+            <form method="GET" class="tb-card">
+              <div class="tb-filters-row">
+
+                <div class="tb-filter-group">
+                  <label class="tb-label">From</label>
+                  <input type="date" name="from" value="<%= from || '' %>" class="tb-input" />
+                </div>
+
+                <div class="tb-filter-group">
+                  <label class="tb-label">To</label>
+                  <input type="date" name="to" value="<%= to || '' %>" class="tb-input" />
+                </div>
+
+                <button class="tb-btn-primary">Search</button>
+
+                <a href="/admin/payments" class="tb-btn-secondary">
+                  Clear
+                </a>
+
+              </div>
+            </form>
+          </section>
+
+      
+
+        <!-- TABLE -->
+        <section class="tb-section">
+          <h2>Payments List</h2>
+
+          <table class="tb-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Shop</th>
+                <th>Order ID</th>
+                <th class="tb-text-right">Amount (₹)</th>
+                <th>Payment Method</th>
+                <th>Collected By</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <% if (payments.length===0) { %>
+                <tr>
+                  <td colspan="7" style="text-align:center;color:#9ca3af">
+                    No payments found
+                  </td>
+                </tr>
+                <% } %>
+
+                  <% payments.forEach(p=> { %>
+                    <tr>
+                      <td>
+                        <%= p.date %>
+                      </td>
+                      <td>
+                        <%= p.shopName %>
+                      </td>
+                      <td>
+                        <%= p.orderId.toString().slice(-6).toUpperCase() %>
+                      </td>
+                      <td class="tb-text-right">₹<%= p.amount %>
+                      </td>
+                      <td>
+                        <span class="tb-badge-online">
+                          <%= p.method %>
+                        </span>
+                      </td>
+                      <td>
+                        <%= p.collectedBy || "-" %>
+                      </td>
+                      <td class="tb-note">
+                        <%= p.note || "-" %>
+                      </td>
+                    </tr>
+                    <% }) %>
+            </tbody>
+
+          </table>
+          <div class="tb-pagination"
+            style="margin-top:16px;display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:13px;color:#9ca3af">
+              Page <strong>
+                <%= page %>
+              </strong> of <strong>
+                <%= totalPages %>
+              </strong>
+            </div>
+
+            <div style="display:flex;gap:8px">
+
+              <% if (page> 1) { %>
+                <a class="tb-btn-secondary"
+                  href="?page=<%= page - 1 %><%= from ? '&from=' + from : '' %><%= to ? '&to=' + to : '' %>">
+                  Previous
+                </a>
+                <% } %>
+
+                  <% if (page < totalPages) { %>
+                    <a class="tb-btn-primary"
+                      href="?page=<%= page + 1 %><%= from ? '&from=' + from : '' %><%= to ? '&to=' + to : '' %>">
+                      Next
+                    </a>
+                    <% } %>
+
+            </div>
+          </div>
+
+        </section>
+
+        <footer class="tb-footer">
+          © <%= new Date().getFullYear() %> TomatoBox Admin. All rights reserved.
+        </footer>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    const menu = document.querySelector(".tb-user-menu");
+    const caret = document.querySelector(".tb-user-caret");
+
+    caret.addEventListener("click", (e) => {
+      e.stopPropagation();
+      menu.classList.toggle("tb-user-menu--open");
+    });
+
+    document.addEventListener("click", () => {
+      menu.classList.remove("tb-user-menu--open");
+    });
+  </script>
+
+</body>
+
+</html>

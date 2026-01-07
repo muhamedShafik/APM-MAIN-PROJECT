@@ -1,0 +1,187 @@
+<%- include('partials/header', { title: "Today's Bill" }) %>
+<%- include('partials/sidebar', { active: 'today-bill' }) %>
+
+<div class="content billcard">
+  <%- include('partials/topbar', { user }) %>
+
+  <div class="bill-wrapper">
+    <div class="bill-card">
+
+      <h3 class="bill-title">Today's Bill</h3>
+      <p class="bill-date"><%= todayDate %></p>
+
+      <div class="bill-row">
+        <span>Boxes Sold</span>
+        <strong><%= boxes %></strong>
+      </div>
+
+      <div class="bill-row">
+        <span>Price per box</span>
+        <strong>₹ <%= (pricePerBox || 0).toFixed(2) %>
+</strong>
+      </div>
+
+      <div class="bill-row">
+        <span>Discount per box</span>
+        <strong class="text-warning">
+          ₹ <%= discountPerBox.toFixed(2) %>
+        </strong>
+      </div>
+
+      <hr>
+
+      <div class="bill-total">
+        <span>Total Amount</span>
+        <h2>₹ <%= (totalAmount || 0).toFixed(2) %></h2>
+
+      </div>
+
+      <div class="bill-row text-success">
+        <span>Paid Today</span>
+        <strong>₹ <%= (paidToday || 0).toFixed(2) %></strong>
+
+      </div>
+
+      <div class="bill-row danger">
+        <span>Remaining Today</span>
+        <strong>₹ <%= (remainingToday || 0).toFixed(2) %>
+</strong>
+      </div>
+
+      <div class="bill-row">
+        <span>Shop Outstanding</span>
+        <strong class="text-warning">
+        ₹ <%= (shopOutstanding || 0).toFixed(2) %>
+
+        </strong>
+      </div>
+
+      <% if (isFullyPaid) { %>
+        <button class="btn-success w-full rounded-2 py-2" disabled>
+          ✔ Paid Today
+        </button>
+      <% } else { %>
+        <div class="bill-row">
+          <span>Pay Amount</span>
+          <input
+            type="number"
+            name="paidAmount"
+            class="tb-input-dark no-spinner rounded-1 py-1 ps-3"
+            placeholder="Enter amount"
+            min="1"
+            max="<%= remainingToday %>"
+            required
+          />
+        </div>
+
+        <button
+          type="button"
+          class="btn-primary w-full rounded-2 py-2"
+          onclick="payOnline('<%= orderId %>', '<%= remainingToday %>')">
+          Pay Online
+        </button>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+const Toast = Swal.mixin({
+  toast: true,
+  position: "bottom-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+     background: '#0f172a',   // 🔥 DARK BACKGROUND
+  color: '#e5e7eb',        // light text
+  iconColor: '#22c55e', 
+  customClass: {
+    popup: "swal-toast-on-top"
+  },
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+});
+</script>
+
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+async function payOnline(orderId, remainingToday) {
+  const amount = Number(
+    document.querySelector('input[name="paidAmount"]').value
+  );
+
+  if (!amount || amount <= 0) {
+    Toast.fire({
+      icon: "error",
+      title: "Enter valid amount"
+    });
+    return;
+  }
+
+  if (amount > remainingToday) {
+    Toast.fire({
+      icon: "error",
+      title: "Amount exceeds remaining bill"
+    });
+    return;
+  }
+
+  const res = await fetch("/payment/razorpay/order", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ amount })
+  });
+
+  const data = await res.json();
+  if (!data.success) {
+    Toast.fire({
+      icon: "error",
+      title: "Unable to create payment"
+    });
+    return;
+  }
+
+  const rzp = new Razorpay({
+    key: "<%= process.env.RAZORPAY_KEY_ID %>",
+    amount: data.order.amount,
+    currency: "INR",
+    order_id: data.order.id,
+    handler: async (response) => {
+      const verify = await fetch("/payment/razorpay/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature,
+          orderId,
+          paidAmount: amount
+        })
+      });
+
+      const result = await verify.json();
+      if (result.success) {
+        Toast.fire({
+          icon: "success",
+          title: "Payment successful"
+        });
+
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        Toast.fire({
+          icon: "error",
+          title: "Payment verification failed"
+        });
+      }
+    }
+  });
+
+  rzp.open();
+}
+</script>

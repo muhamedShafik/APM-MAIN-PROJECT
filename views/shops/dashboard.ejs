@@ -1,0 +1,334 @@
+<%- include('partials/header', { title }) %>
+  <%- include('partials/sidebar') %>
+    <%- include('partials/topbar', { user }) %>
+
+      <div class="content">
+
+        <!-- SUMMARY CARDS -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <div class="card-box">
+              <small>Tomorrow’s Order</small>
+              <h4>
+                <%= summary.tomorrowBoxes %> Boxes
+              </h4>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card-box">
+              <small>Today’s Price per Box</small>
+              <h4>₹<%= summary.todayPrice %>
+              </h4>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card-box">
+              <small>Outstanding Balance</small>
+
+              <% if (summary.outstanding> 0) { %>
+                <!-- RED : SHOP NEEDS TO PAY -->
+                <h4 class="text-danger">
+                  ₹<%= summary.outstanding %>
+                </h4>
+
+                <% } else if (summary.outstanding < 0) { %>
+                  <!-- GREEN : ADVANCE PAYMENT -->
+                  <h4 class="text-success">
+                    +₹<%= Math.abs(summary.outstanding) %>
+                  </h4>
+
+                  <% } else { %>
+                    <!-- ZERO BALANCE -->
+                    <h4 class="text-muted">
+                      ₹0
+                    </h4>
+                    <% } %>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- FILTER -->
+        <form method="GET" class="card-box mb-4">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+              <label>From</label>
+              <input type="date" name="from" value="<%= from %>" placeholder="eg.. 12-5-2025" class="form-control ">
+            </div>
+            <div class="col-md-4">
+              <label>To</label>
+              <input type="date" name="to" value="<%= to %>" class="form-control">
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-primary mt-4 ">Apply Filters</button>
+            </div>
+          </div>
+        </form>
+
+        <!-- ORDERS TABLE -->
+        <div class="card-box">
+          <h6 class="mb-3">Recent Orders</h6>
+
+         
+          <div class="card-box">
+  <h6 class="mb-3">Recent Orders</h6>
+
+  <div class="table-responsive">
+     <table class="table table-dark">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th class="text-center">Boxes</th>
+                <th class="text-end">Price</th>
+                <th class="text-end">Discount<br>Per/box</th>
+                <th class="text-end">Total (₹)</th>
+                <th class="text-center">Payment</th>
+
+              </tr>
+            </thead>
+            <tbody>
+              <% orders.forEach(o=> { %>
+                <tr>
+                  <td>
+                    <%= o.deliveryDate %>
+                  </td>
+
+                  <td class="text-center">
+                    <%= o.boxes %>
+                  </td>
+
+                  <td class="text-end">
+                    ₹<%= o.pricePerBox %>
+                  </td>
+
+                  <td class="text-end text-warning">
+                    ₹<%= o.discountPerBox %>
+                  </td>
+
+                  <td class="text-end fw-bold">
+                    ₹<%= o.total %>
+                  </td>
+
+                  <td class="text-center">
+                    <% if (o.paid) { %>
+                      <span class="paid-badge">Paid</span>
+                      <% } else { %>
+                        <button class="pay-btn" onclick="openPayModal('<%= o._id %>')">
+                          Pay now
+                        </button>
+                        <% } %>
+                  </td>
+                </tr>
+                <% }) %>
+            </tbody>
+
+
+          </table>
+  </div>
+</div>
+
+
+          <!-- PAGINATION -->
+          <div class="tb-pagination mt-3">
+            <% if (page> 1) { %>
+              <a class="tb-page-btn" href="?page=<%= page - 1 %>&from=<%= from %>&to=<%= to %>">
+                Previous
+              </a>
+              <% } else { %>
+                <span></span>
+                <% } %>
+
+                  <span>Page <%= page %> of <%= totalPages %></span>
+
+                  <% if (page < totalPages) { %>
+                    <a class="tb-page-btn" href="?page=<%= page + 1 %>&from=<%= from %>&to=<%= to %>">
+                      Next
+                    </a>
+                    <% } %>
+          </div>
+
+        </div>
+        
+
+      </div>
+      <!-- PAY MODAL -->
+      <div id="payModal" class="tb-modal">
+        <div class="tb-modal-content">
+
+          <div class="tb-modal-header">
+            <h5>Order Payment</h5>
+            <span class="tb-close" onclick="closePayModal()">×</span>
+          </div>
+
+          <div id="payModalBody">
+            <!-- Loaded dynamically -->
+            <p class="text-center">Loading...</p>
+          </div>
+
+        </div>
+      </div>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+      <script>
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "bottom-end",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          background: '#0f172a',   // 🔥 DARK BACKGROUND
+          color: '#e5e7eb',        // light text
+          iconColor: '#22c55e',
+          customClass: {
+            popup: 'swal-toast-on-top'
+          },
+          didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+          }
+        });
+      </script>
+
+
+
+
+      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+        </script>
+
+        <script>
+          function openPayModal(orderId) {
+            document.getElementById("payModal").style.display = "flex";
+
+            fetch(`/payment/order/${orderId}`)
+              .then(res => res.text())
+              .then(html => {
+                const body = document.getElementById("payModalBody");
+                body.innerHTML = html;
+
+                const payBtn = body.querySelector("#payOnlineBtn");
+                if (payBtn) {
+                  payBtn.addEventListener("click", () => {
+                    startRazorpay(orderId);
+                  });
+                }
+              })
+              .catch(() => {
+                Toast.fire({
+                  icon: "error",
+                  title: "Failed to load payment details"
+                });
+              });
+          }
+
+          function closePayModal() {
+            document.getElementById("payModal").style.display = "none";
+          }
+
+          async function startRazorpay(orderId) {
+            const amountInput = document.getElementById("payAmount");
+            const amount = Number(amountInput?.value);
+
+            if (!amount || amount <= 0) {
+              Toast.fire({
+                icon: "warning",
+                title: "Enter a valid amount"
+              });
+              return;
+            }
+
+            let data;
+            try {
+              const res = await fetch("/payment/razorpay/order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ amount })
+              });
+              data = await res.json();
+            } catch {
+              Toast.fire({
+                icon: "error",
+                title: "Server not reachable"
+              });
+              return;
+            }
+
+            if (!data.success) {
+              Toast.fire({
+                icon: "error",
+                title: "Payment initialization failed"
+              });
+              return;
+            }
+
+            const rzp = new Razorpay({
+              key: "<%= razorpayKey %>",
+              amount: data.order.amount,
+              currency: "INR",
+              name: "TomatoBox",
+              description: "Order Payment",
+              order_id: data.order.id,
+
+              handler: async function (response) {
+                let result;
+
+                try {
+                  const verify = await fetch("/payment/razorpay/verify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      razorpay_order_id: response.razorpay_order_id,
+                      razorpay_payment_id: response.razorpay_payment_id,
+                      razorpay_signature: response.razorpay_signature,
+                      orderId,
+                      paidAmount: amount
+                    })
+                  });
+
+                  result = await verify.json();
+                } catch {
+                  Toast.fire({
+                    icon: "error",
+                    title: "Payment verification failed"
+                  });
+                  return;
+                }
+
+                if (result.success) {
+                  Toast.fire({
+                    icon: "success",
+                    title: "Payment successful"
+                  });
+
+                  setTimeout(() => {
+                    closePayModal();
+                    location.reload();
+                  }, 1200);
+
+                } else {
+                  Toast.fire({
+                    icon: "error",
+                    title: result.message || "Payment failed"
+                  });
+                }
+              },
+
+              modal: {
+                ondismiss: function () {
+                  Toast.fire({
+                    icon: "info",
+                    title: "Payment cancelled"
+                  });
+                }
+              }
+            });
+
+            rzp.open();
+          }
+        </script>
+
+
+        <%- include('partials/footer') %>

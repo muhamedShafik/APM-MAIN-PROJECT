@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Blocked</title>
+  <style>
+    body {
+      margin: 0;
+      background: #020617;
+      color: #e5e7eb;
+      font-family: system-ui;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .box {
+      background: #0b1120;
+      padding: 28px 32px;
+      border-radius: 14px;
+      border: 1px solid #1f2937;
+      text-align: center;
+      width: 360px;
+    }
+    h2 {
+      color: #ef4444;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 14px;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+    a {
+      display: inline-block;
+      padding: 10px 18px;
+      background: #22c55e;
+      color: #020617;
+      border-radius: 999px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Account Blocked</h2>
+    <p>
+      Your account has been blocked.<br />
+      Please contact admin to continue.
+    </p>
+
+    <a
+      href="https://wa.me/<%= adminPhone %>?text=Hello%20Admin%2C%0AMy%20account%20has%20been%20blocked.%0AI%20respectfully%20request%20you%20to%20review%20my%20account.%0AIf%20there%20was%20any%20mistake%20from%20my%20side%2C%20I%20apologize.%0AThank%20you."
+      target="_blank"
+    >
+      Contact Admin on WhatsApp
+    </a>
+  </div>
+</body>
+</html>

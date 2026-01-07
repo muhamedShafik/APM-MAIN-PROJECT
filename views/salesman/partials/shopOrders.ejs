@@ -1,0 +1,120 @@
+<!-- DATE FILTER -->
+<div class="card-box mb-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label">From</label>
+      <input type="date" id="ordersFrom" class="tb-input-dark">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">To</label>
+      <input type="date" id="ordersTo" class="tb-input-dark">
+    </div>
+    <div class="col-md-4">
+      <button class="btn btn-primary" onclick="applyOrdersFilter()">Apply Filters</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDERS TABLE -->
+<div class="card-box">
+  <table class="table tb-table align-middle">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Boxes</th>
+        <th>Price / Box</th>
+        <th>Total (₹)</th>
+        <th>Paid (₹)</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+
+    <tbody id="ordersTable">
+      <% orders.forEach(o => { %>
+        <tr class="order-row" data-date="<%= o.deliveryDate %>">
+          <td><%= o.deliveryDate %></td>
+          <td><%= o.boxes %></td>
+          <td>₹<%= o.pricePerBox %></td>
+          <td>₹<%= o.billAmount %></td>
+          <td>
+            <% if (o.paidAmount > 0) { %>
+              <span class="text-success">₹<%= o.paidAmount %></span>
+            <% } else { %>
+              <span class="text-warning">Pending</span>
+            <% } %>
+          </td>
+          <td>
+            <% if (o.paidAmount >= o.billAmount) { %>
+              <span class="badge bg-success">PAID</span>
+            <% } else { %>
+              <span class="badge bg-warning text-dark">PENDING</span>
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <!-- PAGINATION -->
+  <div class="tb-pagination mt-3">
+    <div id="ordersInfo" class="tb-pagination-info"></div>
+    <div class="tb-pagination-actions">
+      <button class="tb-page-btn" onclick="prevOrders()">Previous</button>
+      <button class="tb-page-btn tb-page-btn--primary" onclick="nextOrders()">Next</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========= ORDERS FILTER + PAGINATION ========= */
+const orderRows = Array.from(document.querySelectorAll(".order-row"));
+let filteredOrders = [...orderRows];
+let ordersPage = 1;
+const ordersPerPage = 5;
+
+function renderOrders() {
+  orderRows.forEach(r => r.style.display = "none");
+
+  const start = (ordersPage - 1) * ordersPerPage;
+  const end = start + ordersPerPage;
+
+  filteredOrders.slice(start, end).forEach(r => r.style.display = "");
+
+  document.getElementById("ordersInfo").innerText =
+    `Showing ${start + 1}-${Math.min(end, filteredOrders.length)} of ${filteredOrders.length}`;
+}
+
+function applyOrdersFilter() {
+  const from = document.getElementById("ordersFrom").value;
+  const to = document.getElementById("ordersTo").value;
+
+  const fromDate = from ? new Date(from) : null;
+  const toDate = to ? new Date(to) : null;
+
+  filteredOrders = orderRows.filter(row => {
+    const d = new Date(row.dataset.date);
+    if (fromDate && d < fromDate) return false;
+    if (toDate && d > toDate) return false;
+    return true;
+  });
+
+  ordersPage = 1;
+  renderOrders();
+}
+
+function nextOrders() {
+  if (ordersPage * ordersPerPage < filteredOrders.length) {
+    ordersPage++;
+    renderOrders();
+  }
+}
+
+function prevOrders() {
+  if (ordersPage > 1) {
+    ordersPage--;
+    renderOrders();
+  }
+}
+
+renderOrders();
+</script>

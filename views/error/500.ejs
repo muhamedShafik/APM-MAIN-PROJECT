@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Server Error</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<script>
+Swal.fire({
+  icon: "error",
+  title: "Server Error",
+  text: "Something went wrong. Please try again later.",
+  background: "#020617",
+  color: "#e5e7eb",
+  confirmButtonColor: "#ef4444"
+}).then(() => {
+  window.location.href = "/admin/dashboard";
+});
+</script>
+
+</body>
+</html>
+
+
+

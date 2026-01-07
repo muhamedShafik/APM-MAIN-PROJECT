@@ -1,0 +1,48 @@
+<div class="row g-3">
+  <div class="col-md-3">
+    <div class="card-box">
+      <small>Total boxes ordered</small>
+      <h5 class="mt-1"><%= summary.totalBoxes %></h5>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card-box">
+      <small>Total amount</small>
+      <h5 class="mt-1">₹<%= summary.totalAmount %></h5>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card-box">
+      <small>Total paid</small>
+      <h5 class="mt-1">₹<%= summary.totalPaid %></h5>
+    </div>
+  </div>
+<div class="col-md-3">
+  <div class="card-box">
+    <small>Balance</small>
+
+    <% if (summary.balance > 0) { %>
+      <!-- SHOP NEEDS TO PAY -->
+      <h5 class="mt-1 text-danger">
+        ₹<%= summary.balance %>
+      </h5>
+
+    <% } else if (summary.balance < 0) { %>
+      <!-- ADVANCE PAYMENT -->
+      <h5 class="mt-1 text-success">
+        +₹<%= Math.abs(summary.balance) %>
+      </h5>
+
+    <% } else { %>
+      <!-- FULLY SETTLED -->
+      <h5 class="mt-1 text-muted">
+        ₹0
+      </h5>
+    <% } %>
+
+  </div>
+</div>
+
+</div>

@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>TomatoBox Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+<body class="tb-body">
+  <div class="tb-shell">
+
+    <!-- Sidebar -->
+    <aside class="tb-sidebar">
+      <div class="tb-logo" style="font-size: 22px;">TomatoBox</div>
+      <nav class="tb-nav">
+        <a href="/admin/dashboard" class="tb-nav-item">Dashboard</a>
+        <a href="/admin/orders" class="tb-nav-item">Orders</a>
+        <a href="/admin/daily-prices" class="tb-nav-item">Daily prices</a>
+        <a href="/admin/users" class="tb-nav-item tb-nav-item--active">Users</a>
+        <a href="/admin/payments" class="tb-nav-item">Payments</a>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="tb-main">
+
+      <!-- Top Bar -->
+      <header class="tb-topbar">
+        <div class="tb-topbar-title">
+          <h1>Users</h1>
+        </div>
+
+        <div class="tb-topbar-user" style="margin-right: 17px;">
+          <div class="tb-user-menu">
+            <div class="tb-user-avatar">
+              <span>
+                <%= (user && user.name ? user.name[0] : 'A' ).toUpperCase() %>
+              </span>
+            </div>
+            <div class="tb-user-text">
+              <p class="tb-user-name">
+                <%= user && user.name ? user.name : 'Arun Kumar' %>
+              </p>
+              <p class="tb-user-role">
+                <%= user && user.role ? user.role : 'Admin' %>
+              </p>
+            </div>
+            <button class="tb-user-caret" type="button">▾</button>
+
+            <div class="tb-user-dropdown">
+
+              <a href="/admin/logout" style="color:#e5e7eb; display:block; padding:8px 14px;text-decoration: none;">
+                Logout
+              </a>
+
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="tb-content">
+
+        <section class="tb-section">
+
+          <!-- Header Row -->
+          <div class="tb-users-header">
+            <div>
+              <h2>Users</h2>
+              <p class="tb-users-subtitle">Manage shops, salesmen and their balances.</p>
+            </div>
+            <button class="tb-btn-danger">Add User</button>
+          </div>
+
+          <form method="GET" action="/admin/users" class="tb-users-controls" id="" search>
+
+            <!-- SEARCH -->
+            <div class="tb-search-wrapper">
+              <span class="tb-search-icon">🔍</span>
+              <input type="text" name="search" value="<%= search %>" class="tb-input tb-search-input"
+                placeholder="Search by name or phone" />
+            </div>
+            <div>
+              <select name="role" class="tb-input" style="width:160px">
+                <option value="">All Roles</option>
+                <option value="shop" <%=role==="shop" ? "selected" : "" %>>Shop</option>
+                <option value="salesman" <%=role==="salesman" ? "selected" : "" %>>
+                  Salesman
+                </option>
+              </select>
+            </div>
+            <!-- ROLE FILTER -->
+
+
+            <button class="tb-btn-danger">Apply</button>
+          </form>
+
+
+
+          <!-- USERS TABLE -->
+          <div class="tb-card tb-card--table">
+            <table class="tb-table tb-table--users">
+              <thead>
+                <tr>
+                  <th>User Name</th>
+                  <th>Phone</th>
+                  <th>Area / Location</th>
+                  <th>Role</th>
+                  <th class="tb-text-right">Outstanding Balance</th>
+                  <th class="tb-text-right">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <% users.forEach(u=> { %>
+                  <tr>
+                    <td>
+                      <div class="tb-user-cell">
+                        <div class="tb-avatar tb-avatar--<%= u.avatar %>">
+                          <span>
+                            <%= u.initials %>
+                          </span>
+                        </div>
+                        <div>
+                          <div class="tb-user-main">
+                            <%= u.name %>
+                          </div>
+                          <div class="tb-user-meta">Shop ID: <%= u.id %>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      <%= u.phone %>
+                    </td>
+                    <td>
+                      <%= u.location %>
+                    </td>
+
+                    <td>
+                      <span class="tb-pill tb-pill--green">
+                        <%= u.role %>
+                      </span>
+                    </td>
+
+                    <td class="tb-text-right">
+  <% if (u.balance < 0) { %>
+    <span class="tb-balance tb-balance--credit">
+      +₹<%= Math.abs(u.balance) %>
+    </span>
+  <% } else if (u.balance > 0) { %>
+    <span class="tb-balance tb-balance--due">
+      ₹<%= u.balance %>
+    </span>
+  <% } else { %>
+    <span class="tb-balance tb-balance--zero">
+      ₹0
+    </span>
+  <% } %>
+</td>
+
+
+                    <td class="tb-text-right">
+                      <a href="/admin/users/<%= u.originalId %>" class="tb-btn-outline text-decoration-none text-reset">
+                        View details
+                      </a>
+
+                    </td>
+
+                  </tr>
+                  <% }) %>
+              </tbody>
+
+            </table>
+          </div>
+          <div class="tb-pagination" style="margin-top:16px;display:flex;justify-content:space-between">
+
+            <div>
+              Page <strong>
+                <%= page %>
+              </strong> of <strong>
+                <%= totalPages %>
+              </strong>
+            </div>
+
+            <div style="display:flex;gap:8px">
+
+              <% if (page> 1) { %>
+                <a class="tb-btn-outline" href="?page=<%= page - 1 %>&search=<%= search %>&role=<%= role %>">
+                  Previous
+                </a>
+                <% } %>
+
+                  <% if (page < totalPages) { %>
+                    <a class="tb-btn-outline" href="?page=<%= page + 1 %>&search=<%= search %>&role=<%= role %>">
+                      Next
+                    </a>
+                    <% } %>
+
+            </div>
+          </div>
+
+        </section>
+
+        <footer class="tb-footer">
+          © <%= new Date().getFullYear() %> TomatoBox Admin. All rights reserved.
+        </footer>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Script -->
+  <script>
+    const menu = document.querySelector('.tb-user-menu');
+    const caret = document.querySelector('.tb-user-caret');
+
+    caret.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.classList.toggle('tb-user-menu--open');
+    });
+
+    document.addEventListener('click', () => {
+      menu.classList.remove('tb-user-menu--open');
+    });
+    document.querySelector(".tb-btn-danger").addEventListener("click", () => {
+      document.getElementById("addUserModal").classList.remove("hidden");
+    });
+
+    // CLOSE MODAL
+    document.addEventListener("DOMContentLoaded", () => {
+
+      document.querySelector(".tb-btn-danger").addEventListener("click", () => {
+        document.getElementById("addUserModal").classList.remove("hidden");
+      });
+
+      document.querySelector(".tb-modal-close").addEventListener("click", () => {
+        document.getElementById("addUserModal").classList.add("hidden");
+      });
+
+      document.getElementById("addUserModal").addEventListener("click", (e) => {
+        if (e.target.id === "addUserModal") {
+          e.target.classList.add("hidden");
+        }
+      });
+
+    });
+    
+    // sweet alert
+
+   
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("addUserModal");
+  const form = modal.querySelector("form");
+  const phoneInput = document.getElementById("phoneInput");
+
+  // Allow only digits while typing
+  phoneInput.addEventListener("input", () => {
+    phoneInput.value = phoneInput.value.replace(/\D/g, "");
+  });
+
+  form.addEventListener("submit", (e) => {
+    const phone = phoneInput.value.trim();
+
+    if (!/^\d{10}$/.test(phone)) {
+      e.preventDefault();
+
+      Toast.fire({
+        icon: "error",
+        title: "Phone number must be exactly 10 digits"
+      });
+
+      phoneInput.focus();
+      return false;
+    }
+  });
+});
+
+
+
+const Toast = Swal.mixin({
+  toast: true,
+  position: "bottom-end",
+  showConfirmButton: false,
+  timer: 2600,
+  timerProgressBar: true,
+  background: "#020617",     // solid dark
+  color: "#e5e7eb",
+  iconColor: "#22c55e",      // green
+  customClass: {
+    popup: "tb-toast"
+  },
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+});
+
+const params = new URLSearchParams(window.location.search);
+
+if (params.get("success")) {
+  Toast.fire({
+    icon: "success",
+    title: params.get("success")
+  });
+}
+
+if (params.get("error")) {
+  Toast.fire({
+    icon: "error",
+    title: params.get("error")
+  });
+}
+
+// remove params after showing
+if (params.get("success") || params.get("error")) {
+  const url = new URL(window.location);
+  url.searchParams.delete("success");
+  url.searchParams.delete("error");
+  window.history.replaceState({}, document.title, url.pathname);
+}
+
+
+
+    if (params.get("error")) {
+      showAlert("error", "Error", params.get("error"));
+    }
+
+    if (params.get("success")) {
+      showAlert("success", "Success", params.get("success"));
+    }
+
+
+  </script>
+
+  <style>
+    /* sweet alert */
+    .dark-swal-popup {
+      background: rgba(0, 0, 0, 0.6) !important;
+      color: #fff !important;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .dark-swal-title {
+      color: #fff !important;
+      font-size: 16px;
+    }
+
+    .dark-swal-text {
+      color: #e5e7eb !important;
+    }
+
+
+
+    /* -------- Base layout / theme (same as your dark theme) -------- */
+    .tb-body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+    }
+
+    .tb-shell {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .tb-sidebar {
+      width: 220px;
+      background: #0b1120;
+      color: #e5e7eb;
+      padding: 16px 12px;
+      border-right: 1px solid #111827;
+    }
+
+    .tb-logo {
+      font-weight: 600;
+      margin-bottom: 24px;
+      font-size: 18px;
+    }
+
+    .tb-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .tb-nav-item {
+      padding: 8px 10px;
+      border-radius: 6px;
+      color: #e5e7eb;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .tb-nav-item--active,
+    .tb-nav-item:hover {
+      background: #111827;
+    }
+
+    /* Main + topbar */
+    .tb-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #020617;
+    }
+
+    .tb-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      border-bottom: 1px solid #111827;
+      background: #020617;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .tb-topbar-title h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #f9fafb;
+    }
+
+    .tb-topbar-user {
+      display: flex;
+      align-items: center;
+    }
+
+    .tb-user-menu {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #020617;
+      border: 1px solid #1f2937;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .tb-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: #1f2937;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #e5e7eb;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .tb-user-text {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .tb-user-name {
+      margin: 0;
+      font-size: 13px;
+      color: #e5e7eb;
+    }
+
+    .tb-user-role {
+      margin: 0;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .tb-user-caret {
+      border: none;
+      background: transparent;
+      color: #9ca3af;
+      font-size: 12px;
+      padding: 0 4px 0 2px;
+      cursor: pointer;
+    }
+
+    .tb-user-dropdown {
+      position: absolute;
+      right: 0;
+      top: 110%;
+      min-width: 160px;
+      background: #020617;
+      border-radius: 10px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+      border: 1px solid #1f2937;
+      padding: 6px 0;
+      display: none;
+      z-index: 20;
+    }
+
+    .tb-user-menu.tb-user-menu--open .tb-user-dropdown {
+      display: block;
+    }
+
+    .tb-user-dropdown a,
+    .tb-user-dropdown button {
+      width: 100%;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: #e5e7eb;
+      text-align: left;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .tb-user-dropdown a:hover,
+    .tb-user-dropdown button:hover {
+      background: #111827;
+    }
+
+    /* Content wrapper */
+    .tb-content {
+      padding: 20px 28px 28px;
+    }
+
+    .tb-section {
+      margin-bottom: 28px;
+    }
+
+    body {
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      caret-color: transparent;
+    }
+
+    .tb-section h2 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      color: #e5e7eb;
+    }
+
+    .tb-footer {
+      margin-top: 24px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    /* Cards & table */
+    .tb-card {
+      background: #0b1120;
+      border-radius: 10px;
+      padding: 12px 14px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.5);
+      color: #f9fafb;
+    }
+
+    .tb-card--table {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .tb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      color: #e5e7eb;
+    }
+
+    .tb-table th,
+    .tb-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #1f2937;
+      text-align: left;
+    }
+
+    .tb-table th {
+      background: #020617;
+      font-weight: 500;
+      color: #9ca3af;
+    }
+
+    .tb-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .tb-table tbody tr:hover {
+      background: #020617;
+    }
+
+    .tb-text-right {
+      text-align: right;
+    }
+
+    /* Inputs & buttons */
+    .tb-label {
+      display: block;
+      font-size: 12px;
+      color: #9ca3af;
+
+      margin-bottom: 4px;
+    }
+
+    .tb-input {
+      width: 100%;
+      padding: 9px 0px;
+      border-radius: 8px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 13px;
+      outline: none;
+      /* transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease; */
+    }
+
+    /* Chrome / Edge / Safari */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill,
+    select:-webkit-autofill {
+      -webkit-text-fill-color: #ffffff !important;
+      /* white text */
+      -webkit-box-shadow: 0 0 0px 1000px #020617 inset !important;
+      /* dark bg */
+      transition: background-color 5000s ease-in-out 0s;
+      caret-color: #ffffff;
+    }
+
+
+    .tb-btn-danger {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      background: #ef4444;
+      color: #f9fafb;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 12px 24px rgba(127, 29, 29, 0.9);
+      transition: background 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .tb-btn-danger:hover {
+      background: #f97373;
+      transform: translateY(-1px);
+      box-shadow: 0 16px 30px rgba(127, 29, 29, 1);
+    }
+
+    .tb-btn-danger:active {
+      transform: translateY(1px);
+      box-shadow: 0 10px 20px rgba(127, 29, 29, 1);
+    }
+/* Balance colors */
+.tb-balance {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.tb-balance--credit {
+  color: #22c55e; /* green */
+}
+
+.tb-balance--due {
+  color: #ef4444; /* red */
+}
+
+.tb-balance--zero {
+  color: #9ca3af; /* gray */
+}
+
+    .tb-btn-outline {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #f97373;
+      background: transparent;
+      color: #fecaca;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+    }
+
+    .tb-btn-outline:hover {
+      background: #b91c1c;
+      color: #fee2e2;
+      border-color: #fecaca;
+    }
+
+    /* Users page specific */
+    .tb-users-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .tb-users-subtitle {
+      margin: 0;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .tb-users-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .tb-search-wrapper {
+      display: flex;
+      width: 100%;
+      position: relative;
+    }
+
+    .tb-search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .tb-search-input {
+      padding-left: 28px;
+    }
+
+    .tb-users-filters {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tb-filter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.12s ease, border-color 0.12s ease;
+    }
+
+    .tb-filter-btn:hover {
+      background: #111827;
+      border-color: #374151;
+    }
+.tb-toast {
+  border-radius: 10px !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.7) !important;
+  font-size: 13px !important;
+}
+    .tb-filter-caret {
+      font-size: 10px;
+      color: #9ca3af;
+    }
+
+    .tb-user-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #search {
+      margin-bottom: 14px;
+    }
+.tb-btn-outline,
+.tb-btn-outline:hover,
+.tb-btn-outline:focus {
+  text-decoration: none !important;
+}
+
+    .tb-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #020617;
+    }
+
+    .tb-avatar--yellow {
+      background: #fef3c7;
+    }
+
+    .tb-avatar--mint {
+      background: #d1fae5;
+    }
+
+    .tb-avatar--blue {
+      background: #dbeafe;
+    }
+
+    .tb-avatar--gray {
+      background: #e5e7eb;
+    }
+
+    .tb-avatar--pink {
+      background: #ffe4e6;
+    }
+
+    .tb-user-main {
+      font-size: 13px;
+      color: #f9fafb;
+      margin-bottom: 2px;
+    }
+
+    .tb-user-meta {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .tb-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+    }
+
+    .tb-pill--green {
+      background: #16a34a33;
+      color: #4ade80;
+    }
+
+    @media (max-width: 900px) {
+      .tb-shell {
+        flex-direction: column;
+      }
+
+      .tb-sidebar {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .tb-main {
+        flex: none;
+      }
+
+      .tb-users-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .tb-users-filters {
+        justify-content: flex-start;
+      }
+    }
+
+    /* --- Modal Background --- */
+    .tb-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .tb-modal-box {
+      width: 350px;
+      background: #0b1120;
+      padding: 22px;
+      border-radius: 14px;
+      position: relative;
+      z-index: 1001;
+    }
+
+    .tb-modal-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: #e5e7eb;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+  <!-- Add User Modal -->
+  <div id="addUserModal" class="tb-modal hidden">
+    <div class="tb-modal-box">
+
+      <button class="tb-modal-close">×</button>
+
+      <h2 class="tb-modal-title">Add User</h2>
+
+      <form action="/admin/users/add" method="POST">
+
+        <label class="tb-label" ">User Name</label>
+        <input type=" text" name="name" class="tb-input" style="padding-left:10px" required>
+
+         <label class="tb-label">Phone</label>
+<input
+  type="text"
+  name="phone"
+  id="phoneInput"
+  class="tb-input"
+  style="padding-left:10px"
+  maxlength="10"
+  inputmode="numeric"
+  pattern="[0-9]*"
+  placeholder="10-digit mobile number"
+  required
+>
+
+          <label class="tb-label">Area / Location</label>
+          <input type="text" name="location" class="tb-input" style="padding-left:10px">
+
+          <label class="tb-label">Role</label>
+          <select name="role" class="tb-input" style="width: 362px;" required>
+            <option value="">Select role</option>
+            <option value="shop">Shop</option>
+            <option value="salesman">Salesman</option>
+          </select>
+
+          <button class="tb-btn-primary"
+            style="margin-top:15px; color:white; border-radius:6px ; padding:6px 12px;  background:#4f46e5; border:none; ">Save
+            User</button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- user detail modal -->
+
+
+
+
+</body>
+
+</html>

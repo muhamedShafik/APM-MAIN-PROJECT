@@ -1,0 +1,339 @@
+<%- include('partials/header', { title }) %>
+  <%- include('partials/sidebar', { active: 'orders' }) %>
+
+    <div class="content">
+      <%- include('partials/topbar', { title, user }) %>
+
+        <div class="card-box mb-4">
+          <h6 class="mb-3">Create New Order</h6>
+
+          <form action="/sales/orders/create" method="POST" id="orderForm">
+
+            <div class="row g-3">
+
+              <!-- SHOP SEARCH -->
+              <div class="col-md-6" style="position:relative;">
+                <label class="form-label">Select shop</label>
+
+                <input type="text" id="shopSearch" class="tb-input-dark" placeholder="Type shop name or phone..."
+                  autocomplete="off" required />
+
+                <input type="hidden" name="shop" id="shopId" required />
+
+                <div id="shopDropdown" class="tb-dropdown-list"
+                  style="display:none; position:absolute; width:100%; z-index:20;"></div>
+              </div>
+
+
+              <!-- DELIVERY DATE -->
+              <div class="col-md-6">
+                <label class="form-label">Delivery Date</label>
+                <input type="date" name="deliveryDate" value="<%= deliveryDateValue %>" class="tb-input-dark"
+                  required />
+              </div>
+
+              <!-- BOXES -->
+              <div class="col-md-6">
+                <label class="form-label">Boxes</label>
+                <input type="number" name="boxes" class="tb-input-dark" required />
+              </div>
+
+              <!-- DISCOUNT -->
+              <div class="col-md-6">
+                <label class="form-label">Discount / box</label>
+                <input type="number" name="discountPerBox" class="tb-input-dark" />
+              </div>
+
+            </div>
+
+            <button class="tb-btn-primary w-100 mt-4">
+              Save order
+            </button>
+          </form>
+        </div>
+        <form method="GET" action="/sales/take-Order" class="mb-3">
+          <label class="form-label">Filter by date</label>
+          <input type="date" name="date" value="<%= deliveryDateValue %>" class="tb-input-dark"
+            onchange="this.form.submit()" />
+        </form>
+
+        <!-- ORDERS LIST -->
+        <div class="card-box">
+          <h6>Orders for <%= deliveryDateValue %>
+          </h6>
+
+          <table class="table tb-table">
+            <thead>
+              <tr>
+                <th>Shop</th>
+                <th>Boxes</th>
+                <th>Discount</th>
+                <th>Date</th>
+                <th>action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (ordersForDate.length===0) { %>
+                <tr>
+                  <td colspan="4" class="text-center text-muted">No orders</td>
+                </tr>
+                <% } %>
+
+                  <% ordersForDate.forEach(o=> { %>
+                    <tr>
+                      <td>
+                        <%= o.shop.name %>
+                      </td>
+                      <td>
+                        <%= o.boxes %>
+                      </td>
+                      <td>₹<%= o.discountPerBox ?? 0 %></td>
+
+                      <td>
+                        <%= o.deliveryDate %>
+                      </td>
+                      <% const today=new Date().toISOString().slice(0, 10); const tomorrow=new Date(Date.now() +
+                        86400000).toISOString().slice(0, 10); const editable=o.deliveryDate===today ||
+                        o.deliveryDate===tomorrow; %>
+
+                        <td>
+                          <% if (editable) { %>
+                            <button
+  type="button"
+  onclick="openEditModal(
+    '<%= o._id %>',
+    '<%= o.boxes %>',
+    '<%= o.discountPerBox %>',
+    '<%= o.deliveryDate %>'
+  )"
+  class="bg-transparent border-0"
+>
+  ✏️
+</button>
+
+
+
+                            <button type="button" onclick="openDeleteModal('<%= o._id %>')"
+                              class="bg-transparent border-0" title="Delete order">
+                              ✖️
+                            </button>
+
+                            <% } else { %>
+                              <span style="opacity:0.5; cursor:not-allowed;" title="Past orders are locked">
+                                🔒 Locked
+                              </span>
+                              <% } %>
+                        </td>
+
+
+                    </tr>
+                    <% }) %>
+            </tbody>
+          </table>
+          </table>
+
+          <!-- ✅ PAGINATION -->
+          <div class="tb-pagination">
+            <div class="tb-pagination-info">
+              Page <strong>
+                <%= page %>
+              </strong> of <strong>
+                <%= totalPages %>
+              </strong>
+            </div>
+
+            <div class="tb-pagination-actions">
+              <% if (page> 1) { %>
+                <a href="?page=<%= page - 1 %>&date=<%= deliveryDateValue %>" class="tb-page-btn">
+                  Previous
+                </a>
+                <% } else { %>
+                  <span class="tb-page-btn tb-page-btn--disabled">Previous</span>
+                  <% } %>
+
+                    <% if (page < totalPages) { %>
+                      <a href="?page=<%= page + 1 %>&date=<%= deliveryDateValue %>"
+                        class="tb-page-btn tb-page-btn--primary">
+                        Next
+                      </a>
+                      <% } else { %>
+                        <span class="tb-page-btn tb-page-btn--disabled">Next</span>
+                        <% } %>
+            </div>
+          </div>
+
+        </div>
+    </div>
+
+    <!-- JS LOGIC -->
+
+    <script>
+
+     function openEditModal(id, boxes, discount, deliveryDate) {
+  const form = document.getElementById("editForm");
+
+  form.action = `/sales/orders/${id}/update`;
+
+  form.querySelector('input[name="boxes"]').value = boxes;
+  form.querySelector('input[name="discountPerBox"]').value = discount;
+  form.querySelector('input[name="deliveryDate"]').value = deliveryDate;
+
+  document.getElementById("editModal").style.display = "flex";
+}
+      function closeEditModal() {
+        document.getElementById("editModal").style.display = "none";
+      }
+
+      function openDeleteModal(id) {
+        document.getElementById("deleteForm").action =
+          `/sales/orders/${id}/delete`;
+        document.getElementById("deleteModal").style.display = "flex";
+      }
+
+      function closeDeleteModal() {
+        document.getElementById("deleteModal").style.display = "none";
+      }
+
+      // SEARCH JS
+      const shopSearch = document.getElementById("shopSearch");
+      const shopDropdown = document.getElementById("shopDropdown");
+      const shopId = document.getElementById("shopId");
+
+      shopSearch.addEventListener("input", async () => {
+        const q = shopSearch.value.trim();
+        shopDropdown.innerHTML = "";
+        shopId.value = "";
+
+        if (!q) {
+          shopDropdown.style.display = "none";
+          return;
+        }
+
+        const res = await fetch(`/sales/shops/search?q=${q}`);
+        const shops = await res.json();
+
+        if (!shops.length) {
+          shopDropdown.innerHTML =
+            `<div class="tb-dropdown-item text-muted">No shops found</div>`;
+          shopDropdown.style.display = "block";
+          return;
+        }
+
+        shops.forEach(s => {
+          const div = document.createElement("div");
+          div.className = "tb-dropdown-item";
+          div.innerHTML = `<strong>${s.name}</strong><br><small>${s.phone}</small>`;
+
+          div.onclick = () => {
+            shopSearch.value = s.name;
+            shopId.value = s._id;
+            shopDropdown.style.display = "none";
+          };
+
+          shopDropdown.appendChild(div);
+        });
+
+        shopDropdown.style.display = "block";
+      });
+
+      // prevent submit without selection
+      document.getElementById("orderForm").addEventListener("submit", e => {
+        if (!shopId.value) {
+          e.preventDefault();
+          alert("Please select a shop from the list");
+        }
+      });
+
+
+      // SWEET ALERT IN 
+
+      const params = new URLSearchParams(window.location.search);
+
+      function showDarkAlert(icon, message) {
+        Swal.fire({
+          icon: icon,
+          title: message,
+          width: 300,
+
+          padding: "1em",
+          timer: 2200,
+          showConfirmButton: false,
+          backdrop: "rgba(0,0,0,0.75)",
+
+          background: "#0b1120",
+          color: "#e5e7eb",
+
+          customClass: {
+            popup: "tb-swal-popup",
+            title: "tb-swal-title"
+          }
+        });
+
+        // ✅ Remove params (prevents repeat on refresh)
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      if (params.get("success")) {
+        showDarkAlert("success", params.get("success"));
+      }
+
+      if (params.get("error")) {
+        showDarkAlert("error", params.get("error"));
+      }
+
+
+
+    </script>
+    <!-- ================= EDIT ORDER MODAL ================= -->
+    <div id="editModal" class="tb-modal">
+      <div class="tb-modal-content">
+        <h6>Edit Order</h6>
+
+        <form id="editForm" method="POST">
+          <div class="mb-2">
+            <label class="form-label">Boxes</label>
+            <input type="number" name="boxes" class="tb-input-dark" required />
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Discount / box</label>
+            <input type="number" name="discountPerBox" class="tb-input-dark" />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Delivery Date</label>
+            <input type="date" name="deliveryDate" class="tb-input-dark" required />
+          </div>
+
+          <button class="tb-btn-primary w-100">
+            Update Order
+          </button>
+        </form>
+
+        <button type="button" class="tb-btn-secondary w-100 mt-2" onclick="closeEditModal()">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= DELETE ORDER MODAL ================= -->
+    <div id="deleteModal" class="tb-modal">
+      <div class="tb-modal-content">
+        <h6>Delete Order?</h6>
+        <p class="t">
+          This action cannot be undone.
+        </p>
+
+        <form id="deleteForm" method="POST">
+          <button class="btn-danger w-100" type="submit">
+            Delete
+          </button>
+        </form>
+
+        <button type="button" class="tb-btn-secondary w-100 mt-2" onclick="closeDeleteModal()">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <%- include('partials/footer') %>

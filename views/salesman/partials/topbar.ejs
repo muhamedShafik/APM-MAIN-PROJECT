@@ -1,0 +1,30 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex align-items-center gap-2">
+    <!-- Mobile menu button -->
+    <button
+      class="btn btn-outline-light d-md-none"
+      onclick="toggleSidebar()"
+    >
+      ☰
+    </button>
+
+    <h5 class="mb-0"><%= title %></h5>
+  </div>
+
+  <!-- Profile -->
+  <div class="dropdown">
+    <button class="profile-btn dropdown-toggle" data-bs-toggle="dropdown">
+      <%= user && user.name ? user.name : 'Sales User' %>
+    </button>
+
+    <ul class="dropdown-menu tb-dropdown">
+      <li>
+        <form action="/sales/logout" method="GET">
+          <button type="submit" class="tb-logout-btn">
+            Logout
+          </button>
+        </form>
+      </li>
+    </ul>
+  </div>
+</div>
