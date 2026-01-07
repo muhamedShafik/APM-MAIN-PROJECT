@@ -22,7 +22,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: new MongoStore({
-    mongoUrl: 'mongodb://localhost:27017/APM',
+    mongoUrl: 'mongodb+srv://muhammedshafik9544_db_user:YiPFY86veoIqtzCb@apm.vka3grm.mongodb.net/APM?retryWrites=true&w=majority',
     collectionName: 'sessions',
     ttl: 24 * 60 * 60
   }),
