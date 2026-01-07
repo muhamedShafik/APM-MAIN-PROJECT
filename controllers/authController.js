@@ -105,45 +105,6 @@ const postSendOtp = async (req, res) => {
         res.redirect("/auth/login?error=Failed to send OTP");
     }
 };
-// const postSendOtp = async (req, res) => {
-//     try {
-//         const { phone } = req.body;
-
-  
-//         const user = await User.findOne({ phone: phone });
-//         console.log(user);
-//         if (!user) {
-//             return res.redirect("/auth/login?error=User not found");
-//       }
-
-// if (user.blocked) {
-//   return res.render("blocked", {
-//     adminPhone: ADMIN_PHONE || "919876543210"
-//   });
-// }
-    
-//         const { otp, expires } = generateOtp();
-//         console.log("Generated OTP:", otp);
-
-      
-//         req.session.loginUserId = user._id.toString();
-//         req.session.otp = otp;
-//         req.session.otpExpires = expires;
-
-//         console.log("Session Data:", req.session);
-
-       
-//         console.log(`qw DEV MODE: OTP for ${user.role} (${user.phone}) = ${otp}`);
-     
-      
-//         res.redirect("/auth/verify-otp");
-
-//    } catch (err) {
-//   console.error(err);
-//   res.redirect("/auth/login?error=Failed to send OTP");
-// }
-
-// };
 
 
 const postVerifyOtp = async (req, res) => {
