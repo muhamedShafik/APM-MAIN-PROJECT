@@ -1,187 +1,357 @@
 <%- include('partials/header', { title: "Today's Bill" }) %>
-<%- include('partials/sidebar', { active: 'today-bill' }) %>
+  <%- include('partials/sidebar', { active: 'today-bill' }) %>
 
-<div class="content billcard">
-  <%- include('partials/topbar', { user }) %>
+    <div class="content billcard container-fluid">
 
-  <div class="bill-wrapper">
-    <div class="bill-card">
+      <%- include('partials/topbar', { user }) %>
 
-      <h3 class="bill-title">Today's Bill</h3>
-      <p class="bill-date"><%= todayDate %></p>
+        <div class="row justify-content-center">
+          <div class="col-12 col-sm-10 col-md-6 col-lg-4">
+            <div class="bill-card">
 
-      <div class="bill-row">
-        <span>Boxes Sold</span>
-        <strong><%= boxes %></strong>
-      </div>
+              <h3 class="bill-title">Today's Bill</h3>
+              <p class="bill-date">
+                <%= todayDate %>
+              </p>
 
-      <div class="bill-row">
-        <span>Price per box</span>
-        <strong>₹ <%= (pricePerBox || 0).toFixed(2) %>
-</strong>
-      </div>
+              <div class="bill-row">
+                <span>Boxes Sold</span>
+                <strong>
+                  <%= boxes %>
+                </strong>
+              </div>
 
-      <div class="bill-row">
-        <span>Discount per box</span>
-        <strong class="text-warning">
-          ₹ <%= discountPerBox.toFixed(2) %>
-        </strong>
-      </div>
+              <div class="bill-row">
+                <span>Price per box</span>
+                <strong>₹ <%= (pricePerBox || 0).toFixed(2) %>
+                </strong>
+              </div>
 
-      <hr>
+              <div class="bill-row">
+                <span>Discount per box</span>
+                <strong class="text-warning">
+                  ₹ <%= discountPerBox.toFixed(2) %>
+                </strong>
+              </div>
 
-      <div class="bill-total">
-        <span>Total Amount</span>
-        <h2>₹ <%= (totalAmount || 0).toFixed(2) %></h2>
+              <hr>
 
-      </div>
+              <div class="bill-total">
+                <span>Total Amount</span>
+                <h2>₹ <%= (totalAmount || 0).toFixed(2) %>
+                </h2>
 
-      <div class="bill-row text-success">
-        <span>Paid Today</span>
-        <strong>₹ <%= (paidToday || 0).toFixed(2) %></strong>
+              </div>
 
-      </div>
+              <div class="bill-row text-success">
+                <span>Paid Today</span>
+                <strong>₹ <%= (paidToday || 0).toFixed(2) %></strong>
 
-      <div class="bill-row danger">
-        <span>Remaining Today</span>
-        <strong>₹ <%= (remainingToday || 0).toFixed(2) %>
-</strong>
-      </div>
+              </div>
 
-      <div class="bill-row">
-        <span>Shop Outstanding</span>
-        <strong class="text-warning">
-        ₹ <%= (shopOutstanding || 0).toFixed(2) %>
+              <div class="bill-row danger">
+                <span>Remaining Today</span>
+                <strong>₹ <%= (remainingToday || 0).toFixed(2) %>
+                </strong>
+              </div>
 
-        </strong>
-      </div>
+              <div class="bill-row">
+                <span>Shop Outstanding</span>
+                <strong class="text-warning">
+                  ₹ <%= (shopOutstanding || 0).toFixed(2) %>
 
-      <% if (isFullyPaid) { %>
-        <button class="btn-success w-full rounded-2 py-2" disabled>
-          ✔ Paid Today
-        </button>
-      <% } else { %>
-        <div class="bill-row">
-          <span>Pay Amount</span>
-          <input
-            type="number"
-            name="paidAmount"
-            class="tb-input-dark no-spinner rounded-1 py-1 ps-3"
-            placeholder="Enter amount"
-            min="1"
-            max="<%= remainingToday %>"
-            required
-          />
+                </strong>
+              </div>
+
+              <% if (isFullyPaid) { %>
+                <button class="btn-success w-full rounded-2 py-2" disabled>
+                  ✔ Paid Today
+                </button>
+                <% } else { %>
+                  <div class="bill-row">
+                    <span>Pay Amount</span>
+                    <input type="number" name="paidAmount" class="tb-input-dark no-spinner rounded-1 py-1 ps-3"
+                      placeholder="Enter amount" min="1" max="<%= remainingToday %>" required />
+                  </div>
+
+                  <button type="button" class="btn btn-primary w-100 py-2 mt-2"
+                    onclick="payOnline('<%= orderId %>', '<%= remainingToday %>')">
+                    Pay Online
+                  </button>
+
+                  <% } %>
+
+            </div>
+          </div>
         </div>
-
-        <button
-          type="button"
-          class="btn-primary w-full rounded-2 py-2"
-          onclick="payOnline('<%= orderId %>', '<%= remainingToday %>')">
-          Pay Online
-        </button>
-      <% } %>
-
     </div>
-  </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-const Toast = Swal.mixin({
-  toast: true,
-  position: "bottom-end",
-  showConfirmButton: false,
-  timer: 3000,
-  timerProgressBar: true,
-     background: '#0f172a',   // 🔥 DARK BACKGROUND
-  color: '#e5e7eb',        // light text
-  iconColor: '#22c55e', 
-  customClass: {
-    popup: "swal-toast-on-top"
-  },
-  didOpen: (toast) => {
-    toast.onmouseenter = Swal.stopTimer;
-    toast.onmouseleave = Swal.resumeTimer;
-  }
-});
-</script>
-
-
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
-<script>
-async function payOnline(orderId, remainingToday) {
-  const amount = Number(
-    document.querySelector('input[name="paidAmount"]').value
-  );
-
-  if (!amount || amount <= 0) {
-    Toast.fire({
-      icon: "error",
-      title: "Enter valid amount"
-    });
-    return;
-  }
-
-  if (amount > remainingToday) {
-    Toast.fire({
-      icon: "error",
-      title: "Amount exceeds remaining bill"
-    });
-    return;
-  }
-
-  const res = await fetch("/payment/razorpay/order", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ amount })
-  });
-
-  const data = await res.json();
-  if (!data.success) {
-    Toast.fire({
-      icon: "error",
-      title: "Unable to create payment"
-    });
-    return;
-  }
-
-  const rzp = new Razorpay({
-    key: "<%= process.env.RAZORPAY_KEY_ID %>",
-    amount: data.order.amount,
-    currency: "INR",
-    order_id: data.order.id,
-    handler: async (response) => {
-      const verify = await fetch("/payment/razorpay/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_signature: response.razorpay_signature,
-          orderId,
-          paidAmount: amount
-        })
+    <script>
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "bottom-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: '#0f172a',   // 🔥 DARK BACKGROUND
+        color: '#e5e7eb',        // light text
+        iconColor: '#22c55e',
+        customClass: {
+          popup: "swal-toast-on-top"
+        },
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        }
       });
+    </script>
 
-      const result = await verify.json();
-      if (result.success) {
-        Toast.fire({
-          icon: "success",
-          title: "Payment successful"
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+      async function payOnline(orderId, remainingToday) {
+        const amount = Number(
+          document.querySelector('input[name="paidAmount"]').value
+        );
+
+        if (!amount || amount <= 0) {
+          Toast.fire({
+            icon: "error",
+            title: "Enter valid amount"
+          });
+          return;
+        }
+
+        if (amount > remainingToday) {
+          Toast.fire({
+            icon: "error",
+            title: "Amount exceeds remaining bill"
+          });
+          return;
+        }
+
+        const res = await fetch("/payment/razorpay/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount })
         });
 
-        setTimeout(() => location.reload(), 1000);
-      } else {
-        Toast.fire({
-          icon: "error",
-          title: "Payment verification failed"
+        const data = await res.json();
+        if (!data.success) {
+          Toast.fire({
+            icon: "error",
+            title: "Unable to create payment"
+          });
+          return;
+        }
+
+        const rzp = new Razorpay({
+          key: "<%= process.env.RAZORPAY_KEY_ID %>",
+          amount: data.order.amount,
+          currency: "INR",
+          order_id: data.order.id,
+          handler: async (response) => {
+            const verify = await fetch("/payment/razorpay/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                orderId,
+                paidAmount: amount
+              })
+            });
+
+            const result = await verify.json();
+            if (result.success) {
+              Toast.fire({
+                icon: "success",
+                title: "Payment successful"
+              });
+
+              setTimeout(() => location.reload(), 1000);
+            } else {
+              Toast.fire({
+                icon: "error",
+                title: "Payment verification failed"
+              });
+            }
+          }
         });
+
+        rzp.open();
       }
-    }
-  });
-
-  rzp.open();
+    </script>
+    <style>
+/* ================= ROOT ================= */
+:root {
+  --bg: #020617;
+  --panel: #0b1120;
+  --border: #1f2937;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --primary: #6366f1;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #facc15;
 }
-</script>
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+  width: 230px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 16px;
+  z-index: 1000;
+}
+
+/* Hide sidebar on mobile */
+@media (max-width: 767px) {
+  aside.sidebar {
+    display: none;
+  }
+}
+
+/* ================= CONTENT (CRITICAL FIX) ================= */
+@media (min-width: 768px) {
+  .content {
+    margin-left: 100px;
+    padding: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .content {
+    margin-left: 0 !important;
+    padding: 12px;
+  }
+}
+
+/* ================= BILL CARD ================= */
+.bill-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  
+  margin: 45px auto; /* HARD CENTER */
+}
+
+/* ================= BILL TEXT ================= */
+.bill-title {
+  color: var(--primary);
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.bill-date {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+/* ================= BILL ROW ================= */
+.bill-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.bill-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 18px 0;
+}
+
+.bill-total h2 {
+  color: var(--primary);
+  font-size: 26px;
+  margin: 0;
+}
+
+/* ================= INPUT ================= */
+.tb-input-dark {
+  width: 100%;
+  max-width: 160px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.tb-input-dark:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: none;
+}
+
+/* ================= BUTTON ================= */
+.btn-primary {
+  background: var(--primary);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: #4f46e5;
+}
+
+/* ================= COLORS ================= */
+.text-success {
+  color: var(--success);
+}
+
+.text-danger {
+  color: var(--danger);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+
+.w-full {
+  width: 100%;
+}
+
+/* ================= MOBILE FIX (IMPORTANT) ================= */
+@media (max-width: 576px) {
+
+  .bill-title {
+    font-size: 20px;
+  }
+
+  .bill-total h2 {
+    font-size: 22px;
+  }
+
+  .bill-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 14px;
+  }
+
+  .tb-input-dark {
+    max-width: 100%;
+  }
+}
+
+
+    </style>

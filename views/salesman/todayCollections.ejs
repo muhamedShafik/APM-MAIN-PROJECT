@@ -64,7 +64,7 @@
 
     <div class="tb-modal-header">
       <h3>Collect Payment</h3>
-      <button type="button" onclick="closePaymentModal()" class="">✕</button>
+      <button type="button" onclick="closePaymentModal()" class="close">✕</button>
     </div>
 
     <p><b id="pmShopName"></b></p>
@@ -108,7 +108,7 @@
 
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <script>
 /* ================= TOAST CONFIG ================= */
@@ -208,4 +208,6 @@ async function submitPayment() {
     showError("Server error");
   }
 }
+
+
 </script>

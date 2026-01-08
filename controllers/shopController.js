@@ -286,7 +286,7 @@ const createOrder = async (req, res) => {
   }
 };
 
-/* ================= UPDATE ORDER ================= */
+
 
 const updateOrder = async (req, res) => {
   try {
@@ -331,7 +331,7 @@ const updateOrder = async (req, res) => {
   }
 };
 
-/* ================= DELETE ORDER ================= */
+
 
 const deleteOrder = async (req, res) => {
   try {
@@ -370,7 +370,6 @@ const getShopTransactions = async (req, res) => {
     const page = parseInt(req.query.page || 1);
     const limit = 6;
 
-    /* ================= FETCH ORDERS ================= */
     const orderQuery = { shop: shopId };
 
     if (from && to) {
@@ -381,7 +380,7 @@ const getShopTransactions = async (req, res) => {
       .sort({ deliveryDate: 1 }) // OLD → NEW
       .lean();
 
-    /* ================= FETCH PRICES ================= */
+    
     const deliveryDates = orders.map(o => o.deliveryDate);
 
     const prices = await DailyPrice.find({

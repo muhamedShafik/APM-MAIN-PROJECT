@@ -376,16 +376,28 @@ const setDailyPrice = async (req, res) => {
       createdBy: userId
     });
 
-  
+    
     const orders = await Order.find({ deliveryDate: dateStr });
 
     for (const order of orders) {
       const discount = Number(order.discountPerBox || 0);
-      const totalAmount =
+      const newTotal =
         order.boxes * Math.max(Number(price) - discount, 0);
 
-      order.totalAmount = totalAmount;
-      await order.save();
+      const oldTotal = Number(order.totalAmount || 0);
+      const difference = newTotal - oldTotal;
+
+     
+      await Order.updateOne(
+        { _id: order._id },
+        { $set: { totalAmount: newTotal } }
+      );
+
+     
+      await User.findByIdAndUpdate(
+        order.shop,
+        { $inc: { balance: difference } }
+      );
     }
 
     return res.redirect(
@@ -393,12 +405,10 @@ const setDailyPrice = async (req, res) => {
     );
 
   } catch (err) {
-    console.log("Daily price error:", err);
+    console.error("Daily price error:", err);
     return res.status(500).render("error/500");
   }
 };
-
-
 
 
 const getdailyPrices = async (req, res) => {
@@ -767,8 +777,9 @@ const createOrders = async (req, res) => {
       return res.redirect("/admin/orders?error=Order already exists");
     }
 
+    // 🔹 Find daily price (use dateStr if possible)
     const priceDoc = await DailyPrice.findOne({
-      priceDate: new Date(deliveryDate)
+      priceDateStr: deliveryDate
     });
 
     let totalAmount = 0;
@@ -776,19 +787,24 @@ const createOrders = async (req, res) => {
     if (priceDoc) {
       totalAmount =
         boxCount * Math.max(priceDoc.pricePerBox - discount, 0);
-
-      await User.findByIdAndUpdate(shop, {
-        $inc: { balance: totalAmount }
-      });
     }
 
-    await Order.create({
+    
+    const order = await Order.create({
       shop,
       deliveryDate,
       boxes: boxCount,
       discountPerBox: discount,
       totalAmount
     });
+
+   
+    if (totalAmount > 0) {
+      await User.findByIdAndUpdate(
+        shop,
+        { $inc: { balance: totalAmount } }
+      );
+    }
 
     return res.redirect("/admin/orders?success=Order created");
 
@@ -797,6 +813,7 @@ const createOrders = async (req, res) => {
     return res.redirect("/admin/orders?error=Create failed");
   }
 };
+
 
 
 const isTomorrowOrder = (deliveryDate) => {

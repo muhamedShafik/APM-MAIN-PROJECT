@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APM - Smart Tomato & Vegetable Store Management</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #8b5cf6;
+      --accent: #22c55e;
+      --dark-bg: #020617;
+      --dark-card: rgba(15, 23, 42, 0.7);
+      --text-light: #e5e7eb;
+      --text-gray: #9ca3af;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--dark-bg);
+      color: var(--text-light);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Animated Gradient Background */
+    .gradient-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(-45deg, #6366f1, #8b5cf6, #06b6d4, #22c55e);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      z-index: -2;
+      opacity: 0.1;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Lightning Animation */
+    .lightning-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .lightning {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transform: translateX(-100%);
+      animation: lightning 8s infinite;
+    }
+
+    @keyframes lightning {
+      0%, 100% { transform: translateX(-100%); }
+      10%, 15% { transform: translateX(100%); }
+    }
+
+    /* Floating Particles */
+    .particles-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(99, 102, 241, 0.2);
+      animation: floatParticle linear infinite;
+    }
+
+    @keyframes floatParticle {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-1000px) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* Navigation */
+    .navbar {
+      backdrop-filter: blur(20px);
+      background: rgba(2, 6, 23, 0.8);
+      border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 1rem 0;
+      transition: all 0.3s ease;
+    }
+
+    .navbar.scrolled {
+      padding: 0.5rem 0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .logo-text {
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      font-size: 1.8rem;
+    }
+
+    .nav-login-btn {
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      color: white;
+      border-radius: 50px;
+      padding: 0.5rem 1.5rem;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+    }
+
+    .nav-login-btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 20px 40px rgba(99, 102, 241, 0.6);
+      color: white;
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      padding-top: 80px;
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 800;
+      background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+      line-height: 1.1;
+    }
+
+    .hero-tagline {
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      color: var(--text-gray);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-description {
+      font-size: 1.2rem;
+      line-height: 1.7;
+      color: var(--text-light);
+      margin-bottom: 2.5rem;
+      max-width: 600px;
+    }
+
+    /* Animated CTA Button */
+    .btn-primary-custom {
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 0.8rem 2rem;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
+      animation: neonPulse 2s infinite;
+    }
+
+    .btn-primary-custom:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 25px 50px rgba(99, 102, 241, 0.6);
+      color: white;
+    }
+
+    .btn-primary-custom::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transform: rotate(45deg);
+      transition: all 0.5s ease;
+    }
+
+    .btn-primary-custom:hover::after {
+      left: 100%;
+    }
+
+    @keyframes neonPulse {
+      0%, 100% { box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4); }
+      50% { box-shadow: 0 15px 35px rgba(99, 102, 241, 0.7), 0 0 20px rgba(99, 102, 241, 0.3); }
+    }
+
+    /* Glassmorphism Cards */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+      position: relative;
+      transition: all 0.4s ease;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+    }
+
+    .glass-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 35px 60px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Feature Cards */
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+      color: var(--accent);
+      filter: drop-shadow(0 0 15px rgba(34, 197, 94, 0.5));
+      display: inline-block;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Store Location Card */
+    .store-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.5));
+      animation: pulseGlow 2s infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.5)); }
+      50% { filter: drop-shadow(0 0 30px rgba(99, 102, 241, 0.8)); }
+    }
+
+    /* Section Titles */
+    .section-title {
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 3rem;
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+    }
+
+    /* Glow Divider */
+    .glow-divider {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--accent), transparent);
+      margin: 3rem auto;
+      width: 200px;
+      border-radius: 2px;
+    }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid rgba(99, 102, 241, 0.3);
+      backdrop-filter: blur(20px);
+      background: rgba(2, 6, 23, 0.8);
+    }
+
+    .footer-logo {
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Scroll Animation Classes */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2.8rem;
+      }
+      
+      .hero-description {
+        font-size: 1.1rem;
+      }
+      
+      .section-title {
+        font-size: 2.2rem;
+      }
+      
+      .glass-card {
+        padding: 1.5rem;
+      }
+      
+      .feature-icon {
+        font-size: 2.5rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .hero {
+        text-align: center;
+      }
+      
+      .hero-buttons .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .hero-buttons .btn {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background Elements -->
+  <div class="gradient-bg"></div>
+  <div class="lightning-container">
+    <div class="lightning"></div>
+  </div>
+  <div class="particles-container" id="particles"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+    <div class="container">
+      <a class="navbar-brand logo-text" href="#">APM</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon" style="filter: invert(1);">☰</span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link text-light mx-2" href="#features">Features</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-light mx-2" href="#about">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-light mx-2" href="#store">Store</a>
+          </li>
+        </ul>
+        <a href="/auth/login" class="nav-login-btn ms-lg-3 mt-3 mt-lg-0">Login</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
+          <h1 class="hero-title">APM</h1>
+          <p class="hero-tagline">Smart Tomato & Vegetable Store Management</p>
+          <p class="hero-description">
+            APM is a modern tomato and vegetable store management application built for efficient ordering, billing, and payment tracking. Streamline your daily operations with our powerful tools.
+          </p>
+          <div class="hero-buttons">
+            <div class="d-flex flex-wrap gap-3">
+              <a href="/auth/login" class="btn btn-primary-custom">Login to APM <i class="fas fa-arrow-right ms-2"></i></a>
+              <a href="#features" class="btn btn-outline-light btn-lg rounded-pill px-4">Explore Features</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 mt-5 mt-lg-0" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+          <div class="glass-card p-4">
+            <div class="d-flex justify-content-center mb-4">
+              <i class="fas fa-store fa-4x store-icon"></i>
+            </div>
+            <h3 class="text-center mb-3">Tomato & Vegetable Store</h3>
+            <p class="text-center text-light mb-4">
+              Poovattuparamba (PO), Kozhikode – 673008
+            </p>
+            <div class="d-flex justify-content-center">
+              <div class="badge bg-gradient-primary rounded-pill p-2 px-3">
+                <i class="fas fa-truck me-2"></i> Daily Delivery Available
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Store Location Section -->
+  <section class="py-5" id="store">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8" data-aos="zoom-in" data-aos-duration="800">
+          <div class="glass-card p-4 p-md-5">
+            <div class="row align-items-center">
+              <div class="col-md-3 text-center mb-4 mb-md-0">
+                <div class="store-icon">📍</div>
+              </div>
+              <div class="col-md-9">
+                <h3 class="mb-3">Visit Our Store</h3>
+                <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i> Tomato & Vegetable Store, Poovattuparamba (PO)</p>
+                <p class="mb-2"><i class="fas fa-location-arrow me-2 text-primary"></i> Kozhikode – 673008, Kerala</p>
+                <p class="mb-0"><i class="fas fa-clock me-2 text-primary"></i> Open 7:00 AM - 8:00 PM, 7 Days a Week</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-5" id="features">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up" data-aos-duration="800">Powerful Features</h2>
+      <div class="row g-4">
+        <!-- Feature 1 -->
+        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-duration="800" data-aos-delay="100">
+          <div class="glass-card h-100">
+            <div class="feature-icon text-center">
+              <i class="fas fa-clipboard-list"></i>
+            </div>
+            <h4 class="text-center mb-3">Daily Order Management</h4>
+            <p class="text-center">Track and manage daily orders efficiently with real-time updates and notifications.</p>
+          </div>
+        </div>
+        
+        <!-- Feature 2 -->
+        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-duration="800" data-aos-delay="200">
+          <div class="glass-card h-100">
+            <div class="feature-icon text-center">
+              <i class="fas fa-calculator"></i>
+            </div>
+            <h4 class="text-center mb-3">Tomato & Vegetable Billing</h4>
+            <p class="text-center">Generate accurate bills with one click. Support for multiple items and pricing schemes.</p>
+          </div>
+        </div>
+        
+        <!-- Feature 3 -->
+        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-duration="800" data-aos-delay="300">
+          <div class="glass-card h-100">
+            <div class="feature-icon text-center">
+              <i class="fas fa-credit-card"></i>
+            </div>
+            <h4 class="text-center mb-3">Payment Tracking</h4>
+            <p class="text-center">Monitor cash & online payments seamlessly. Integrated with popular payment gateways.</p>
+          </div>
+        </div>
+        
+        <!-- Feature 4 -->
+        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
+          <div class="glass-card h-100">
+            <div class="feature-icon text-center">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <h4 class="text-center mb-3">Outstanding Balance</h4>
+            <p class="text-center">Keep track of pending payments with automated reminders and reporting tools.</p>
+          </div>
+        </div>
+        
+        <!-- Feature 5 -->
+        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-duration="800" data-aos-delay="500">
+          <div class="glass-card h-100">
+            <div class="feature-icon text-center">
+              <i class="fas fa-users"></i>
+            </div>
+            <h4 class="text-center mb-3">Salesman Dashboard</h4>
+            <p class="text-center">Real-time insights for your team with performance metrics and commission tracking.</p>
+          </div>
+        </div>
+        
+        <!-- Feature 6 -->
+        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-duration="800" data-aos-delay="600">
+          <div class="glass-card h-100">
+            <div class="feature-icon text-center">
+              <i class="fas fa-store-alt"></i>
+            </div>
+            <h4 class="text-center mb-3">Shop Dashboard</h4>
+            <p class="text-center">Complete shop management solution with inventory, sales, and customer analytics.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="py-5" id="about">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-10" data-aos="fade-up" data-aos-duration="800">
+          <div class="glass-card p-4 p-md-5">
+            <h2 class="text-center mb-4">About Our Store</h2>
+            <p class="text-center mb-4">
+              This store specializes in fresh tomatoes and vegetables, supplying local shops 
+              with reliable daily delivery, transparent billing, and efficient payment management.
+              Our mission is to provide the freshest produce while streamlining the supply chain
+              for our partners with modern technology.
+            </p>
+            <div class="glow-divider"></div>
+            <div class="row text-center mt-4">
+              <div class="col-md-4 mb-3">
+                <h4 class="text-primary">10+ Years</h4>
+                <p>Of Experience</p>
+              </div>
+              <div class="col-md-4 mb-3">
+                <h4 class="text-primary">50+ Shops</h4>
+                <p>Supplied Daily</p>
+              </div>
+              <div class="col-md-4 mb-3">
+                <h4 class="text-primary">24/7</h4>
+                <p>Support Available</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer py-5">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6 text-center text-lg-start mb-4 mb-lg-0">
+          <h3 class="footer-logo">APM</h3>
+          <p>Tomato & Vegetable Store Management System</p>
+          <p>Poovattuparamba (PO), Kozhikode – 673008</p>
+        </div>
+        <div class="col-lg-6 text-center text-lg-end">
+          <p class="mb-2">Ready to streamline your store management?</p>
+          <a href="/auth/login" class="btn btn-primary-custom">Get Started Now</a>
+        </div>
+      </div>
+      <div class="text-center mt-4 pt-4 border-top border-secondary">
+        <p class="text-gray">© 2023 APM Store Management. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- AOS Animation Library -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  
+  <script>
+    // Initialize AOS (Animate On Scroll)
+    AOS.init({
+      duration: 1000,
+      once: true,
+      offset: 100
+    });
+
+    // Create floating particles
+    function createParticles() {
+      const container = document.getElementById('particles');
+      const particleCount = 30;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random size between 2px and 8px
+        const size = Math.random() * 6 + 2;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random position
+        particle.style.left = `${Math.random() * 100}vw`;
+        particle.style.top = `${Math.random() * 100}vh`;
+        
+        // Random animation duration between 10s and 20s
+        const duration = Math.random() * 10 + 10;
+        particle.style.animationDuration = `${duration}s`;
+        
+        // Random animation delay
+        const delay = Math.random() * 5;
+        particle.style.animationDelay = `${delay}s`;
+        
+        container.appendChild(particle);
+      }
+    }
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', function() {
+      const navbar = document.getElementById('mainNavbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          window.scrollTo({
+            top: target.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+
+    // Scroll animations for elements
+    function checkScroll() {
+      const elements = document.querySelectorAll('.fade-in');
+      elements.forEach(element => {
+        const elementTop = element.getBoundingClientRect().top;
+        const windowHeight = window.innerHeight;
+        
+        if (elementTop < windowHeight - 100) {
+          element.classList.add('visible');
+        }
+      });
+    }
+
+    // Initialize everything when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      createParticles();
+      checkScroll();
+      
+      // Check scroll position on scroll
+      window.addEventListener('scroll', checkScroll);
+      
+      // Page transition effect
+      document.querySelectorAll('.btn-primary-custom, .nav-login-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          if (this.getAttribute('href').startsWith('/auth/login')) {
+            e.preventDefault();
+            document.body.style.opacity = '0.7';
+            document.body.style.transition = 'opacity 0.3s ease';
+            
+            setTimeout(() => {
+              window.location.href = this.getAttribute('href');
+            }, 300);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -24,7 +24,7 @@
         <th>Boxes</th>
         <th>Price / Box</th>
         <th>Total (₹)</th>
-        <th>Paid (₹)</th>
+       <th>Discount</th>
         <th>Status</th>
       </tr>
     </thead>
@@ -37,12 +37,16 @@
           <td>₹<%= o.pricePerBox %></td>
           <td>₹<%= o.billAmount %></td>
           <td>
-            <% if (o.paidAmount > 0) { %>
-              <span class="text-success">₹<%= o.paidAmount %></span>
-            <% } else { %>
-              <span class="text-warning">Pending</span>
-            <% } %>
-          </td>
+  <% if (o.discountPerBox > 0) { %>
+    <span class="text-warning">
+      ₹<%= (o.discountPerBox * o.boxes).toFixed(2) %>
+      <small class="text-danger">(₹<%= o.discountPerBox %>/box)</small>
+    </span>
+  <% } else { %>
+    <span class="text-white">—</span>
+  <% } %>
+</td>
+
           <td>
             <% if (o.paidAmount >= o.billAmount) { %>
               <span class="badge bg-success">PAID</span>

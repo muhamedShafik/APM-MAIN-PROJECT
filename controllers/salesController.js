@@ -612,66 +612,71 @@ const shopDetailsPage = async (req, res) => {
     /* ================= ORDERS ================= */
 
     const orders = await Order.aggregate([
-      { $match: { shop: shop._id } },
+  { $match: { shop: shop._id } },
 
-      {
-        $lookup: {
-          from: "daily_prices",
-          localField: "deliveryDate",
-          foreignField: "priceDateStr",
-          as: "price"
+  {
+    $lookup: {
+      from: "daily_prices",
+      localField: "deliveryDate",
+      foreignField: "priceDateStr",
+      as: "price"
+    }
+  },
+
+  {
+    $lookup: {
+      from: "payments",
+      localField: "_id",
+      foreignField: "order",
+      as: "payments"
+    }
+  },
+
+  {
+    $addFields: {
+      pricePerBox: {
+        $ifNull: [{ $arrayElemAt: ["$price.pricePerBox", 0] }, 0]
+      },
+
+      discountPerBox: { $ifNull: ["$discountPerBox", 0] },
+
+      billAmount: {
+        $let: {
+          vars: {
+            price: { $ifNull: [{ $arrayElemAt: ["$price.pricePerBox", 0] }, 0] },
+            discount: { $ifNull: ["$discountPerBox", 0] }
+          },
+          in: {
+            $subtract: [
+              { $multiply: ["$boxes", "$$price"] },
+              { $multiply: ["$boxes", "$$discount"] }
+            ]
+          }
         }
       },
 
-      {
-        $lookup: {
-          from: "payments",
-          localField: "_id",
-          foreignField: "order",
-          as: "payments"
-        }
+      totalDiscount: {
+        $multiply: [
+          "$boxes",
+          { $ifNull: ["$discountPerBox", 0] }
+        ]
       },
 
-      {
-        $addFields: {
-          pricePerBox: {
-            $ifNull: [{ $arrayElemAt: ["$price.pricePerBox", 0] }, 0]
-          },
-
-          discountPerBox: { $ifNull: ["$discountPerBox", 0] },
-
-          billAmount: {
-            $let: {
-              vars: {
-                price: {
-                  $ifNull: [{ $arrayElemAt: ["$price.pricePerBox", 0] }, 0]
-                },
-                discount: { $ifNull: ["$discountPerBox", 0] }
-              },
-              in: {
-                $subtract: [
-                  { $multiply: ["$boxes", "$$price"] },
-                  { $multiply: ["$boxes", "$$discount"] }
-                ]
-              }
-            }
-          },
-
-          paidAmount: {
-            $sum: {
-              $map: {
-                input: "$payments",
-                as: "p",
-                in: "$$p.finalAmount"
-              }
-            }
+      paidAmount: {
+        $sum: {
+          $map: {
+            input: "$payments",
+            as: "p",
+            in: "$$p.finalAmount"
           }
         }
       }
-      ,
+    }
+  },
 
-      { $sort: { deliveryDate: -1 } }
-    ]);
+  { $sort: { deliveryDate: -1 } }
+]);
+
 
     /* ================= PAYMENTS (WITH RUNNING BALANCE) ================= */
 const page = parseInt(req.query.page || 1);

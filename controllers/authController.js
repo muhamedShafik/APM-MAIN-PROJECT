@@ -53,57 +53,92 @@ const resendOtp = async (req, res) => {
   }
 };
 
-const postSendOtp = async (req, res) => {
-    try {
-        const { phone } = req.body;
+// const postSendOtp = async (req, res) => {
+//     try {
+//         const { phone } = req.body;
 
 
    
-        const user = await User.findOne({ phone: phone });
+//         const user = await User.findOne({ phone: phone });
         
-        if (!user) {
-            return res.redirect("/auth/login?error=User not found");
-        }
-     if (user.blocked) {
-  return res.render("blocked", {
-    adminPhone: ADMIN_PHONE || "919876543210"
-  });
-}
+//         if (!user) {
+//             return res.redirect("/auth/login?error=User not found");
+//         }
+//      if (user.blocked) {
+//   return res.render("blocked", {
+//     adminPhone: ADMIN_PHONE || "919876543210"
+//   });
+// }
         
-        const { otp, expires } = generateOtp();
-        console.log(otp)
+//         const { otp, expires } = generateOtp();
+//         console.log(otp)
 
-        req.session.loginUserId = user._id.toString();
-        req.session.otp = otp;
-        req.session.otpExpires = expires;
+//         req.session.loginUserId = user._id.toString();
+//         req.session.otp = otp;
+//         req.session.otpExpires = expires;
       
        
         
 
 
-        console.log(`OTP for ${user.role} (${user.phone}):`, otp);
-        const account_sid = process.env.TWILIO_ACCOUNT_SID
-        const auth_token = process.env.TWILIO_AUTH_TOKEN
-        const client = twilio(account_sid, auth_token)
-        async function createMessage() {
-            const message = await client.messages.create({
-                body: otp,
-                from: process.env.TWILIO_PHONE_NUMBER,
-                to: `+91${phone}`,
-            });
+//         console.log(`OTP for ${user.role} (${user.phone}):`, otp);
+//         const account_sid = process.env.TWILIO_ACCOUNT_SID
+//         const auth_token = process.env.TWILIO_AUTH_TOKEN
+//         const client = twilio(account_sid, auth_token)
+//         async function createMessage() {
+//             const message = await client.messages.create({
+//                 body: otp,
+//                 from: process.env.TWILIO_PHONE_NUMBER,
+//                 to: `+91${phone}`,
+//             });
 
 
-            // console.log(message.body);
-        }
-        createMessage()
+//         }
+//         createMessage()
 
 
-        res.redirect("/auth/verify-otp")
+//         res.redirect("/auth/verify-otp")
        
-    } catch (err) {
-        console.error(err);
-        res.redirect("/auth/login?error=Failed to send OTP");
+//     } catch (err) {
+//         console.error(err);
+//         res.redirect("/auth/login?error=Failed to send OTP");
+//     }
+// };
+
+
+
+const postSendOtp = async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    const user = await User.findOne({ phone });
+    if (!user) {
+      return res.redirect("/auth/login?error=User not found");
     }
+
+    if (user.blocked) {
+      return res.render("blocked", {
+        adminPhone: process.env.ADMIN_PHONE || "919876543210"
+      });
+    }
+
+    const otp = "903713";
+    const expires = Date.now() + 5 * 60 * 1000;
+
+    req.session.loginUserId = user._id.toString();
+    req.session.otp = otp;
+    req.session.otpExpires = expires;
+
+    console.log(`DUMMY OTP for ${user.phone}:`, otp);
+
+   
+
+    res.redirect("/auth/verify-otp");
+
+  } catch (err) {
+    console.error(err);
+    res.redirect("/auth/login?error=Failed to send OTP");
+  }
 };
 
 

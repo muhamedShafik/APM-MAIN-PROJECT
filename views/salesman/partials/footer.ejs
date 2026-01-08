@@ -24,6 +24,24 @@
   window.addEventListener("resize", () => {
     if (window.innerWidth >= 768) closeSidebar();
   });
+
+  window.toggleSidebar = function () {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+
+    if (!sidebar) return;
+
+    sidebar.classList.toggle("show");
+    overlay?.classList.toggle("show");
+    document.body.style.overflow =
+      sidebar.classList.contains("show") ? "hidden" : "";
+  };
+
+  window.closeSidebar = function () {
+    document.getElementById("sidebar")?.classList.remove("show");
+    document.getElementById("overlay")?.classList.remove("show");
+    document.body.style.overflow = "";
+  };
 </script>
 
 </body>

@@ -79,7 +79,7 @@
       left: 0;
       height: 100vh;
       padding: 16px;
-      z-index: 1200;
+      z-index: 1000;
       transition: transform .3s ease;
     }
 
@@ -295,15 +295,7 @@
 /* 
 modal css */
 /* ===== MODAL OVERLAY ===== */
-.tb-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.75);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 500;
-}
+
 .tb-modal {
   position: fixed;
   inset: 0;
@@ -312,6 +304,18 @@ modal css */
   align-items: center;
   justify-content: center;
   z-index: 999;
+}
+/* 🔥 Remove only the bottom underline from nav tabs */
+.nav-tabs {
+  border-bottom: none;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+}
+
+.nav-tabs .nav-link.active {
+  border: none;
 }
 
 .tb-modal-content {
@@ -625,11 +629,22 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   padding: 8px 10px;
   cursor: pointer;
 }
-
+.dropdown-menu {
+  z-index: 1201;
+}
+.close{
+  background: none;
+  border: none;
+  color: white;
+}
 .tb-dropdown-item:hover {
   background: #1e293b;
 }
 
+.topbar {
+  position: relative;
+  z-index: 1100;
+}
 
 /* ALERT STYLE */
 .tb-swal-popup {

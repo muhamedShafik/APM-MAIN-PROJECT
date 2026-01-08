@@ -57,10 +57,10 @@ app.use((req, res, next) => {
 require("dotenv").config();
 
 
-app.get('/', (req, res) => {
-  res.redirect('auth/login');
-});
 
+app.get('/', (req, res) => {
+  res.render('landing', { title: 'APM - Smart Store Management' });
+});
 
 app.use((req, res, next) => {
   res.locals.user = req.user || null;

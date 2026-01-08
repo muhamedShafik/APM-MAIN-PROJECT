@@ -3,42 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>APM Login - Responsive</title>
+  <title>APM Login</title>
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #020617;
-      --card-bg: #020617;
-      --accent: #0f274d;
-      --accent-soft: rgba(14, 41, 84, 0.45);
-      --text-main: #e5e7eb;
-      --text-muted: #9ca3af;
-      --border-color: rgba(148, 163, 184, 0.45);
-      --glow-primary: rgba(59, 130, 246, 0.6);
-      --lightning-color: rgba(99, 102, 241, 0.8);
-      --wave-color: rgba(16, 185, 129, 0.1);
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #8b5cf6;
+      --accent: #22c55e;
+      --dark-bg: #020617;
+      --dark-card: rgba(15, 23, 42, 0.7);
+      --text-light: #e5e7eb;
+      --text-gray: #9ca3af;
+      --glow-primary: rgba(99, 102, 241, 0.6);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
-      margin: 0;
-      padding: 40px 20px;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg-color);
-      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      background: var(--dark-bg);
+      color: var(--text-light);
       min-height: 100vh;
-      position: relative;
       overflow-x: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: relative;
     }
 
-    /* Wave Animation */
+    /* Landing Page Gradient Background Animation */
+    .gradient-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(-45deg, #6366f1, #8b5cf6, #06b6d4, #22c55e);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      z-index: -2;
+      opacity: 0.1;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Lightning Animation from Landing Page */
+    .lightning-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .lightning {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transform: translateX(-100%);
+      animation: lightning 8s infinite;
+    }
+
+    @keyframes lightning {
+      0%, 100% { transform: translateX(-100%); }
+      10%, 15% { transform: translateX(100%); }
+    }
+
+    /* Floating Particles from Landing Page */
+    .particles-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(99, 102, 241, 0.2);
+      animation: floatParticle linear infinite;
+    }
+
+    @keyframes floatParticle {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-1000px) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* Wave Animation - Keeping your original wave */
     .wave-bg {
       position: fixed;
       bottom: 0;
@@ -54,7 +136,7 @@
       bottom: 0;
       width: 200%;
       height: 200px;
-      background: linear-gradient(45deg, var(--wave-color), transparent);
+      background: linear-gradient(45deg, rgba(16, 185, 129, 0.1), transparent);
       animation: wave 10s linear infinite;
       transform: rotateZ(4deg);
     }
@@ -62,7 +144,7 @@
     .wave:nth-child(2) {
       animation: wave 10s linear infinite 1s;
       opacity: 0.8;
-      background: linear-gradient(-45deg, var(--wave-color), transparent);
+      background: linear-gradient(-45deg, rgba(16, 185, 129, 0.1), transparent);
     }
 
     @keyframes wave {
@@ -70,188 +152,263 @@
       100% { margin-left: -100%; }
     }
 
-    /* Lightning Animation */
-    .lightning-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .lightning {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: var(--lightning-color);
-      box-shadow: 0 0 10px var(--lightning-color);
-      animation: lightningStrike 3s infinite;
-    }
-
-    @keyframes lightningStrike {
-      0%, 90%, 100% { opacity: 0; transform: translateY(0) scale(1); }
-      10% { opacity: 1; transform: translateY(-200vh) scale(1.5); }
-      11% { opacity: 0; }
-    }
-
-    /* Card Animations */
-    @keyframes cardFloat {
-      0%, 100% { transform: translateY(0) rotateX(0deg); }
-      50% { transform: translateY(-8px) rotateX(1deg); }
-    }
-
-    @keyframes cardFadeIn {
-      from { opacity: 0; transform: translateY(20px) scale(0.95); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .login-wrapper {
-      background: var(--card-bg);
-      border-radius: 24px;
-      border: 1px solid rgba(51, 65, 85, 0.9);
-      box-shadow: 
-        0 25px 50px rgba(15, 23, 42, 0.95),
-        0 0 0 1px rgba(59, 130, 246, 0.1);
-      backdrop-filter: blur(10px);
-      animation: cardFadeIn 0.8s ease-out, cardFloat 4s ease-in-out 0.8s infinite;
-      text-align: center;
+    /* Login Container */
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
       position: relative;
+    }
+
+    /* Glass Card from Landing Page */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+      position: relative;
+      transition: all 0.4s ease;
+      width: 100%;
+      max-width: 480px;
       z-index: 10;
     }
 
-    /* Mobile First - Base Styles (Smaller Input) */
-    .login-wrapper {
-      width: 100%;
-      max-width: 380px; /* Increased width */
-      padding: 2.5rem 2rem 2rem; /* Increased padding */
-      margin: 2rem auto; /* Extra top margin */
-    }
-
-    h1 {
-      margin: 0 0 0.75rem;
-      font-size: 1.875rem;
-      font-weight: 700;
-      color: #f9fafb;
-      position: relative;
-    }
-
-    h1::after {
-      content: '';
-      position: absolute;
-      bottom: -0.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2.75rem;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      border-radius: 1px;
-    }
-
-    .subtitle {
-      margin: 0 0 2.25rem;
-      font-size: 0.9375rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    .field-label {
-      text-align: left !important;
-      font-size: 0.875rem;
-      color: #cbd5f5;
-      margin-bottom: 0.625rem;
-      font-weight: 500;
-    }
-
-    /* SMALLER Input Size */
-    .input {
-      width: 100%;
-      padding: 0.75rem 0.875rem; /* Reduced padding */
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      font-size: 0.9375rem; /* Standard font size */
-      background: rgba(2, 6, 23, 0.8);
-      color: var(--text-main);
-      outline: none;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(10px);
-    }
-
-    .input::placeholder {
-      color: rgba(148, 163, 184, 0.7);
-    }
-
-    .input:focus {
-      border-color: var(--accent);
-      box-shadow: 
-        0 0 0 3px var(--accent-soft),
-        0 8px 25px rgba(15, 118, 185, 0.3);
-      transform: translateY(-2px);
-      background: rgba(2, 6, 23, 0.95);
-    }
-
-    /* STANDARD Button Size */
-    .btn-primary {
-      width: 100%;
-      padding: 0.875rem 1.25rem; /* Standard size */
-      border-radius: 50px;
-      border: none;
-      background: linear-gradient(135deg, #0b1e3d 0%, #1e3a5f 100%);
-      color: white;
-      font-weight: 600;
-      font-size: 1rem; /* Standard font size */
-      cursor: pointer;
-      letter-spacing: 0.5px;
-      box-shadow: 
-        0 20px 40px rgba(11, 30, 61, 0.6),
-        0 0 0 1px rgba(59, 130, 246, 0.3);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-      margin-top: 1.25rem;
-    }
-
-    .btn-primary::before {
+    .glass-card::before {
       content: '';
       position: absolute;
       top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      transition: left 0.5s;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
     }
 
-    .btn-primary:hover::before { left: 100%; }
-
-    .btn-primary:hover {
-      background: linear-gradient(135deg, #112b55 0%, #1e40af 100%);
-      transform: translateY(-3px);
-      box-shadow: 
-        0 25px 50px rgba(11, 30, 61, 0.8),
-        0 0 0 1px rgba(59, 130, 246, 0.5);
+    .glass-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 35px 60px rgba(99, 102, 241, 0.3);
     }
 
-    .helper {
-      margin-top: 1.25rem;
-      font-size: 0.875rem;
-      color: var(--text-muted);
+    /* Title Styling */
+    .login-title {
+      font-size: clamp(2rem, 5vw, 2.5rem);
+      font-weight: 800;
+      background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .login-subtitle {
+      font-size: clamp(0.9rem, 2vw, 1rem);
+      color: var(--text-gray);
+      margin-bottom: 2rem;
+      text-align: center;
       line-height: 1.5;
     }
 
-    .link {
-      margin-top: 1.5rem;
-      font-size: 0.9375rem;
-      color: #3b82f6;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s ease;
+    /* Form Styling */
+    .form-label {
+      font-weight: 600;
+      color: #cbd5f5;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
     }
 
-    .link:hover {
+    .form-input {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      background: rgba(2, 6, 23, 0.8);
+      color: var(--text-light);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2),
+                  0 8px 25px rgba(99, 102, 241, 0.2);
+      background: rgba(2, 6, 23, 0.95);
+      outline: none;
+      transform: translateY(-2px);
+    }
+
+    .form-input::placeholder {
+      color: rgba(148, 163, 184, 0.7);
+    }
+
+    /* Animated CTA Button from Landing Page */
+    .btn-primary-custom {
+      width: 100%;
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 1rem 2rem;
+      font-weight: 600;
+      font-size: 1rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
+      animation: neonPulse 2s infinite;
+      margin-top: 1rem;
+    }
+
+    .btn-primary-custom:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 25px 50px rgba(99, 102, 241, 0.6);
+      color: white;
+    }
+
+    .btn-primary-custom::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transform: rotate(45deg);
+      transition: all 0.5s ease;
+    }
+
+    .btn-primary-custom:hover::after {
+      left: 100%;
+    }
+
+    @keyframes neonPulse {
+      0%, 100% { box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4); }
+      50% { box-shadow: 0 15px 35px rgba(99, 102, 241, 0.7), 0 0 20px rgba(99, 102, 241, 0.3); }
+    }
+
+    /* Helper Text */
+    .helper-text {
+      margin-top: 1.5rem;
+      font-size: 0.875rem;
+      color: var(--text-gray);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* Link Styling */
+    .email-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+      color: var(--primary);
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      padding: 0.5rem;
+    }
+
+    .email-link:hover {
       color: #60a5fa;
       text-shadow: 0 0 8px var(--glow-primary);
+    }
+
+    /* Logo - Similar to Landing Page */
+    .logo {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      z-index: 1000;
+    }
+
+    .logo-text {
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      font-size: 1.8rem;
+      text-decoration: none;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .glass-card {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+      }
+      
+      .logo {
+        top: 1.5rem;
+        left: 1.5rem;
+      }
+      
+      .login-title {
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .login-page {
+        padding: 1rem;
+      }
+      
+      .glass-card {
+        padding: 1.5rem;
+      }
+      
+      .logo {
+        position: relative;
+        top: 0;
+        left: 0;
+        margin-bottom: 2rem;
+        text-align: center;
+        width: 100%;
+      }
+    }
+
+    /* Autofill styles */
+    .form-input:-webkit-autofill,
+    .form-input:-webkit-autofill:hover,
+    .form-input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px rgba(2, 6, 23, 0.95) inset !important;
+      -webkit-text-fill-color: var(--text-light) !important;
+      border: 1px solid rgba(99, 102, 241, 0.5) !important;
+    }
+
+    /* Back to Home Link */
+    .back-home {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      z-index: 1000;
+    }
+
+    .back-home-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-light);
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .back-home-link:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: var(--primary);
+      color: white;
+      transform: translateY(-2px);
     }
 
     /* Shake animation */
@@ -262,103 +419,115 @@
     }
 
     .shake { animation: shake 0.5s ease-in-out; }
-
-    /* Autofill fixes */
-    .input:-webkit-autofill,
-    .input:-webkit-autofill:hover,
-    .input:-webkit-autofill:focus {
-      -webkit-box-shadow: 0 0 0 1000px rgba(2, 6, 23, 0.95) inset !important;
-      -webkit-text-fill-color: var(--text-main) !important;
-    }
-
-    /* Desktop - Perfect Centered + Larger */
-    @media (min-width: 576px) {
-      body {
-        padding: 60px 20px; /* Increased top margin */
-      }
-      
-      .login-wrapper {
-        width: 440px; /* Increased width */
-        padding: 3.25rem 2.75rem 2.75rem;
-        margin: 3rem auto;
-      }
-      
-      h1 { font-size: 2.125rem; }
-      .subtitle { font-size: 1rem; }
-    }
-
-    @media (min-width: 768px) {
-      body {
-        padding: 80px 2rem; /* More top margin for perfect center */
-      }
-      
-      .login-wrapper {
-        width: 480px; /* Larger desktop width */
-        padding: 4rem 3.25rem 3.5rem;
-        box-shadow: 
-          0 40px 80px rgba(15, 23, 42, 0.98),
-          0 0 0 1px rgba(59, 130, 246, 0.2);
-        max-width: 90%;
-      }
-      
-      h1 { font-size: 2.375rem; }
-      .subtitle { font-size: 1.0625rem; margin-bottom: 2.75rem; }
-    }
-
-    @media (min-width: 1200px) {
-      .login-wrapper {
-        width: 520px; /* Maximum desktop width */
-        padding: 4.5rem 3.75rem 4rem;
-      }
-    }
   </style>
 </head>
 <body>
-  <!-- Lightning Background -->
-  <div class="lightning-bg" id="lightningBg"></div>
-  
-  <!-- Wave Animation -->
+  <!-- Landing Page Animations -->
+  <div class="gradient-bg"></div>
+  <div class="lightning-container">
+    <div class="lightning"></div>
+  </div>
+  <div class="particles-container" id="particles"></div>
   <div class="wave-bg">
     <div class="wave"></div>
     <div class="wave"></div>
   </div>
 
-  <!-- Main Login Card - Perfectly Centered -->
-  <div class="login-wrapper">
-    <h1>APM Login</h1>
-    <p class="subtitle">Enter your mobile number to continue</p>
-
-    <form id="phoneForm" method="post" action="/auth/send-otp">
-      <div class="field-label mb-3">Phone number</div>
-      <input
-        class="input mb-4"
-        type="tel"
-        name="phone"
-        id="phoneInput"
-        placeholder="eg. 9876543210"
-        maxlength="10"
-        inputmode="numeric"
-        autocomplete="tel-national"
-        required
-      />
-
-      <button type="submit" class="btn-primary mb-4" id="submitBtn">
-        <span id="btnText">Send OTP</span>
-      </button>
-      
-      <p class="helper mb-3">A 4-digit one-time code will be sent to this number.</p>
-      <div class="link" onclick="useEmail()">
-        Use email instead <i class="bi bi-arrow-right ms-1"></i>
-      </div>
-    </form>
+  <!-- Logo -->
+  <div class="logo">
+    <a href="/" class="logo-text">APM</a>
   </div>
 
-  <!-- Bootstrap JS -->
+  <!-- Back to Home -->
+  <div class="back-home">
+    <a href="/" class="back-home-link">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Home</span>
+    </a>
+  </div>
+
+  <!-- Login Container -->
+  <div class="login-page">
+    <div class="glass-card" data-aos="zoom-in" data-aos-duration="1000">
+      <h1 class="login-title">APM Login</h1>
+      <p class="login-subtitle">Enter your mobile number to access the smart tomato & vegetable store management system</p>
+
+      <form id="phoneForm" method="post" action="/auth/send-otp">
+        <div class="mb-4">
+          <label class="form-label d-block text-start">Phone number</label>
+          <input
+            class="form-input"
+            type="tel"
+            name="phone"
+            id="phoneInput"
+            placeholder="Enter 10-digit mobile number"
+            maxlength="10"
+            inputmode="numeric"
+            autocomplete="tel-national"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary-custom" id="submitBtn">
+          <span id="btnText">Send OTP</span>
+        </button>
+        
+        <p class="helper-text">
+          A 4-digit one-time password will be sent to this number for verification.
+        </p>
+        
+        <div class="email-link" onclick="useEmail()">
+          <span>Use email instead</span>
+          <i class="bi bi-arrow-right"></i>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- AOS Animation Library -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   
   <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 1000,
+      once: true
+    });
+
+    // Create floating particles (from landing page)
+    function createParticles() {
+      const container = document.getElementById('particles');
+      const particleCount = 30;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random size between 2px and 8px
+        const size = Math.random() * 6 + 2;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random position
+        particle.style.left = `${Math.random() * 100}vw`;
+        particle.style.top = `${Math.random() * 100}vh`;
+        
+        // Random animation duration between 10s and 20s
+        const duration = Math.random() * 10 + 10;
+        particle.style.animationDuration = `${duration}s`;
+        
+        // Random animation delay
+        const delay = Math.random() * 5;
+        particle.style.animationDelay = `${delay}s`;
+        
+        container.appendChild(particle);
+      }
+    }
+
     // Lightning effect (KEEPING ORIGINAL JS)
     function createLightning() {
       const lightning = document.createElement('div');
@@ -366,14 +535,14 @@
       lightning.style.left = Math.random() * 100 + '%';
       lightning.style.animationDelay = Math.random() * 2 + 's';
       lightning.style.animationDuration = (Math.random() * 2 + 2) + 's';
-      document.getElementById('lightningBg').appendChild(lightning);
+      document.querySelector('.lightning-container').appendChild(lightning);
       setTimeout(() => lightning.remove(), 5000);
     }
 
     setInterval(createLightning, 8000);
     createLightning();
 
-    // YOUR ORIGINAL JS - 100% PRESERVED
+    // YOUR ORIGINAL JS - 100% PRESERVED (NO CHANGES)
     const Toast = Swal.mixin({
       toast: true,
       position: "bottom-end",
@@ -440,6 +609,13 @@
 
     window.addEventListener('load', () => {
       phoneInput.focus();
+      createParticles();
+    });
+
+    // Add shake animation on invalid input
+    phoneInput.addEventListener('invalid', () => {
+      phoneInput.classList.add('shake');
+      setTimeout(() => phoneInput.classList.remove('shake'), 500);
     });
   </script>
 </body>
