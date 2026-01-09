@@ -678,55 +678,92 @@ const shopDetailsPage = async (req, res) => {
 ]);
 
 
-    /* ================= PAYMENTS (WITH RUNNING BALANCE) ================= */
-const page = parseInt(req.query.page || 1);
-const limit = 5;                 // or any number you want
+ /* ================= PAYMENTS (LEDGER – CORRECT) ================= */
+
+const page = parseInt(req.query.page || "1");
+const limit = 5;
 const skip = (page - 1) * limit;
-let totalPages = 1;
+
 let transactions = [];
+let totalPages = 1;
 
-    if (activeTab === "payments") {
-
-      
+if (activeTab === "payments") {
 
 
-  const paymentsRaw = await Payment.find({ shop: shop._id })
-    .populate("order")
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
+  const ordersRaw = await Order.find({ shop: shop._id })
+    .sort({ deliveryDate: 1 })
     .lean();
 
-  const totalPayments = await Payment.countDocuments({ shop: shop._id });
-  totalPages = Math.ceil(totalPayments / limit);
+  const paymentsRaw = await Payment.find({ shop: shop._id })
+    .sort({ createdAt: 1 })
+    .lean();
 
-  let runningBalance = summary.balance;
-  transactions = [];
 
-  for (const p of paymentsRaw) {
-    if (!p.order) continue;
+  let ledger = [];
 
-    const bill = await calculateTodayBill({ orderId: p.order._id });
+
+  for (const o of ordersRaw) {
+    const bill = await calculateTodayBill({ orderId: o._id });
     if (!bill) continue;
 
-    transactions.push({
-      date: p.createdAt.toISOString().slice(0, 10),
-      boxes: p.order.boxes,
+    ledger.push({
+      date: o.deliveryDate,
+      boxes: o.boxes,
       pricePerBox: bill.pricePerBox,
       total: bill.totalAmount,
-      paid: p.paidAmount,
-      balance: runningBalance,
+      paid: 0,
+      amount: bill.totalAmount, // +
+      method: "-",
+      note: "Order placed"
+    });
+  }
+
+  // PAYMENTS → SUBTRACT balance
+  for (const p of paymentsRaw) {
+    ledger.push({
+      date: p.createdAt,
+      boxes: "-",
+      pricePerBox: "-",
+      total: 0,
+      paid: p.finalAmount,
+      amount: -p.finalAmount, // -
       method: p.method,
       note: p.note || "-"
     });
-
-    runningBalance -= p.paidAmount;
   }
+
+  // 3️⃣ Sort OLD → NEW (important)
+  ledger.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  // 4️⃣ Calculate running balance
+  let runningBalance = 0;
+
+  ledger = ledger.map(row => {
+    runningBalance += row.amount;
+    return {
+      date: new Date(row.date).toISOString().slice(0, 10),
+      boxes: row.boxes,
+      pricePerBox: row.pricePerBox,
+      total: row.total,
+      paid: row.paid,
+      balance: runningBalance,
+      method: row.method,
+      note: row.note
+    };
+  });
+
+
+  ledger.reverse();
+
+  // 6️⃣ Pagination
+  totalPages = Math.ceil(ledger.length / limit);
+  transactions = ledger.slice(skip, skip + limit);
 }
+
 
     /* ================= RENDER ================= */
 
-    res.render("salesman/shopDetails", {
+    res.render("salesman/shopdetails", {
       title: "Shop Details",
       user: req.user,
       shop,
@@ -734,7 +771,10 @@ let transactions = [];
       orders,
          transactions,
      
-      activeTab
+      activeTab,
+      page,
+totalPages
+
     });
 
   } catch (err) {

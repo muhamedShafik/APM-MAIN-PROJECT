@@ -55,34 +55,38 @@
 
   </table>
 
-  <!-- PAGINATION -->
-  <div class="tb-pagination mt-3">
-    <div id="paymentsInfo" class="tb-pagination-info"></div>
-    <div class="tb-pagination-actions">
-      <button class="tb-page-btn" onclick="prevPayments()">Previous</button>
-      <button class="tb-page-btn tb-page-btn--primary" onclick="nextPayments()">Next</button>
-    </div>
+ <div class="tb-pagination mt-3">
+  <div class="tb-pagination-info">
+    Page <%= page %> of <%= totalPages %>
+  </div>
+
+  <div class="tb-pagination-actions">
+    <% if (page > 1) { %>
+      <a
+        href="?tab=payments&page=<%= page - 1 %>"
+        class="tb-page-btn"
+      >
+        Previous
+      </a>
+    <% } else { %>
+      <span class="tb-page-btn tb-page-btn--disabled">Previous</span>
+    <% } %>
+
+    <% if (page < totalPages) { %>
+      <a
+        href="?tab=payments&page=<%= page + 1 %>"
+        class="tb-page-btn"
+      >
+        Next
+      </a>
+    <% } else { %>
+      <span class="tb-page-btn tb-page-btn--disabled">Next</span>
+    <% } %>
   </div>
 </div>
 
+
 <script>
-/* ========= PAYMENTS FILTER + PAGINATION ========= */
-const paymentRows = Array.from(document.querySelectorAll(".payment-row"));
-let filteredPayments = [...paymentRows];
-let paymentsPage = 1;
-const paymentsPerPage = 5;
-
-function renderPayments() {
-  paymentRows.forEach(r => r.style.display = "none");
-
-  const start = (paymentsPage - 1) * paymentsPerPage;
-  const end = start + paymentsPerPage;
-
-  filteredPayments.slice(start, end).forEach(r => r.style.display = "");
-
-  document.getElementById("paymentsInfo").innerText =
-    `Showing ${start + 1}-${Math.min(end, filteredPayments.length)} of ${filteredPayments.length}`;
-}
 
 function applyPaymentsFilter() {
   const from = document.getElementById("paymentsFrom").value;
@@ -91,21 +95,15 @@ function applyPaymentsFilter() {
   const fromDate = from ? new Date(from) : null;
   const toDate = to ? new Date(to) : null;
 
-  paymentRows.forEach(row => {
+  document.querySelectorAll(".payment-row").forEach(row => {
     const d = new Date(row.dataset.date);
-
     let visible = true;
+
     if (fromDate && d < fromDate) visible = false;
     if (toDate && d > toDate) visible = false;
 
     row.style.display = visible ? "" : "none";
   });
-
-  // 🔥 DO NOT TOUCH ORDER
-  document.getElementById("paymentsInfo").innerText =
-    `Showing filtered results`;
 }
-
-
 
 </script>

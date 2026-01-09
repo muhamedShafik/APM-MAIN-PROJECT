@@ -47,13 +47,18 @@
   <% } %>
 </td>
 
-          <td>
-            <% if (o.paidAmount >= o.billAmount) { %>
-              <span class="badge bg-success">PAID</span>
-            <% } else { %>
-              <span class="badge bg-warning text-dark">PENDING</span>
-            <% } %>
-          </td>
+        <td>
+  <% if (!o.pricePerBox || o.pricePerBox === 0) { %>
+    <span class="badge bg-secondary">PRICE NOT SET</span>
+
+  <% } else if (o.paidAmount >= o.billAmount && o.billAmount > 0) { %>
+    <span class="badge bg-success">PAID</span>
+
+  <% } else { %>
+    <span class="badge bg-warning text-dark">PENDING</span>
+  <% } %>
+</td>
+
         </tr>
       <% }) %>
     </tbody>

@@ -244,10 +244,9 @@ else { %>
 
       <% } %>
 
-      <!-- ===== PAYMENTS ===== -->
-      <% if (tab === 'payments') { %>
+     <% if (tab === 'payments') { %>
 
-     <form method="GET" class="tb-filter-bar">
+<form method="GET" class="tb-filter-bar">
   <input type="hidden" name="tab" value="payments">
 
   <input type="date" name="from" class="tb-input" value="<%= from || '' %>">
@@ -256,85 +255,92 @@ else { %>
   <button type="submit" class="tb-btn-outline">Filter</button>
 </form>
 
+<div class="tb-card tb-card--table">
+  <table class="tb-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Boxes</th>
+        <th>Price/Box</th>
+        <th>Total</th>
+        <th>Paid</th>
+        <th>Balance</th>
+        <th>Method</th>
+        <th>Note</th>
+      </tr>
+    </thead>
 
-      <div class="tb-card tb-card--table">
-        <table class="tb-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Boxes</th>
-              <th>Price/Box</th>
-              <th>Total</th>
-              <th>Paid</th>
-              <th>Balance</th>
-              <th>Method</th>
-              <th>Note</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% payments.forEach(p => { %>
-            <tr>
-              <td><%= p.date %></td>
-              <td><%= p.boxes %></td>
-              <td>₹<%= p.pricePerBox %></td>
-              <td>₹<%= p.total %></td>
-              <td>₹<%= p.paid %></td>
-             <td>
-  <% if (p.balance > 0) { %>
-    <span class="text-danger">₹<%= p.balance %></span>
-  <% } else if (p.balance < 0) { %>
-    <span class="text-success">+₹<%= Math.abs(p.balance) %></span>
-  <% } else { %>
-    <span class="text-muted">₹0</span>
-  <% } %>
-</td>
+    <tbody>
+      <% payments.forEach(p => { %>
+        <tr>
+          <td><%= p.date %></td>
 
-              <td><%= p.method %></td>
-              <td><%= p.note || '-' %></td>
-            </tr>
-            <% }) %>
-          </tbody>
-        </table>
-        <div class="tb-pagination">
+          <td><%= p.boxes %></td>
 
-  <!-- LEFT -->
-  <div class="tb-pagination-info">
-    Page <%= page %> of <%= totalPages %>
-  </div>
+          <td>
+            <% if (p.type === "ORDER") { %>
+              ₹<%= p.pricePerBox %>
+            <% } else { %>
+              -
+            <% } %>
+          </td>
 
-  <!-- RIGHT -->
-  <div class="tb-pagination-actions">
+          <td>
+            <% if (p.type === "ORDER") { %>
+              ₹<%= p.total %>
+            <% } else { %>
+              -
+            <% } %>
+          </td>
 
-    <!-- Previous -->
-    <% if (page > 1) { %>
-      <a
-        href="?page=<%= page - 1 %>&date=<%= deliveryDateValue %>"
-        class="tb-page-btn"
-      >
-        Previous
-      </a>
-    <% } else { %>
-      <span class="tb-page-btn tb-page-btn--disabled">Previous</span>
-    <% } %>
+          <td>
+            <% if (p.type === "PAYMENT") { %>
+              ₹<%= p.paid %>
+            <% } else { %>
+              -
+            <% } %>
+          </td>
 
-    <!-- Next -->
-    <% if (page < totalPages) { %>
-      <a
-        href="?page=<%= page + 1 %>&date=<%= deliveryDateValue %>"
-        class="tb-page-btn"
-      >
-        Next
-      </a>
-    <% } else { %>
-      <span class="tb-page-btn tb-page-btn--disabled">Next</span>
-    <% } %>
+          <td>
+            <% if (p.balance > 0) { %>
+              <span class="text-danger">₹<%= p.balance %></span>
+            <% } else if (p.balance < 0) { %>
+              <span class="text-success">+₹<%= Math.abs(p.balance) %></span>
+            <% } else { %>
+              <span class="text-muted">₹0</span>
+            <% } %>
+          </td>
 
+          <td><%= p.method %></td>
+          <td><%= p.note %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <div class="tb-pagination">
+    <div class="tb-pagination-info">
+      Page <%= page %> of <%= totalPages %>
+    </div>
+
+    <div class="tb-pagination-actions">
+      <% if (page > 1) { %>
+        <a href="?tab=payments&page=<%= page - 1 %>" class="tb-page-btn">Previous</a>
+      <% } else { %>
+        <span class="tb-page-btn tb-page-btn--disabled">Previous</span>
+      <% } %>
+
+      <% if (page < totalPages) { %>
+        <a href="?tab=payments&page=<%= page + 1 %>" class="tb-page-btn">Next</a>
+      <% } else { %>
+        <span class="tb-page-btn tb-page-btn--disabled">Next</span>
+      <% } %>
+    </div>
   </div>
 </div>
 
-      </div>
+<% } %>
 
-      <% } %>
 
       <% } %>
 

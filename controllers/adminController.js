@@ -574,7 +574,7 @@ const getUserDetailsPage = async (req, res) => {
 
     const tab = req.query.tab || "summary";
     const page = parseInt(req.query.page || "1");
-    const limit = 8;
+    const limit = 6;
     const skip = (page - 1) * limit;
 
     const { from, to } = req.query;
@@ -705,51 +705,80 @@ const getUserDetailsPage = async (req, res) => {
 
 
 
-  if (tab === "payments") {
+
+
+if (tab === "payments") {
+  const ordersRaw = await Order.find({ shop: viewedUser._id })
+    .sort({ deliveryDate: 1 });
+
   const paymentsRaw = await Payment.find({ shop: viewedUser._id })
-    .populate("order") 
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
-const totalPayments = await Payment.countDocuments({ shop: viewedUser._id });
-totalPages = Math.ceil(totalPayments / limit);
+    .sort({ createdAt: 1 });
 
+  let ledger = [];
 
-  payments = [];
-let runningBalance = summary.balance;
-  for (const p of paymentsRaw) {
-    if (!p.order) continue;
-
- 
-    const bill = await calculateTodayBill({ orderId: p.order._id });
+  for (const o of ordersRaw) {
+    const bill = await calculateTodayBill({ orderId: o._id });
     if (!bill) continue;
 
-    payments.push({
-      date: p.createdAt.toISOString().slice(0, 10),
-      boxes: p.order.boxes,
+    ledger.push({
+      date: o.deliveryDate,
+      type: "ORDER",
+      boxes: o.boxes,
       pricePerBox: bill.pricePerBox,
       total: bill.totalAmount,
+      paid: 0,
+      amount: bill.totalAmount,
+      method: "-",
+      note: "Order placed"
+    });
+  }
+
+  for (const p of paymentsRaw) {
+    ledger.push({
+      date: p.createdAt,
+      type: "PAYMENT",
+      boxes: "-",
+      pricePerBox: "-",
+      total: 0,
       paid: p.paidAmount,
- balance: runningBalance, 
+      amount: -p.paidAmount,
       method: p.method,
       note: p.note || "-"
     });
-    runningBalance += p.paidAmount;
   }
+
+  ledger.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  let runningBalance = 0;
+  ledger = ledger.map(row => {
+    runningBalance += row.amount;
+    return {
+      ...row,
+      balance: runningBalance,
+      date: new Date(row.date).toISOString().slice(0, 10)
+    };
+  }).reverse();
+
+  totalPages = Math.ceil(ledger.length / limit);
+  payments = ledger.slice(skip, skip + limit);
 }
 
-    res.render("admin/userDetails", {
-      user: admin,
-      viewedUser,
-      tab,
-      summary,
-      orders,
-      payments,
-      page,
-      totalPages,
-      from,
-      to
-    });
+// ================= FINAL RENDER (ALWAYS) =================
+return res.render("admin/userDetails", {
+  user: admin,
+  viewedUser,
+  tab,
+  summary,
+  orders,
+  payments,
+  page,
+  totalPages,
+  from,
+  to
+});
+
+
+
 
   } catch (err) {
     console.error("User details page error:", err);
